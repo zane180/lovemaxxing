@@ -13,11 +13,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def hash_password(password: str) -> str:
-    return _bcrypt.hashpw(password.encode(), _bcrypt.gensalt()).decode()
+    return _bcrypt.hashpw(password.encode()[:72], _bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _bcrypt.checkpw(plain.encode(), hashed.encode())
+    return _bcrypt.checkpw(plain.encode()[:72], hashed.encode())
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
