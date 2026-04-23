@@ -1,48 +1,38 @@
 """
-Email service — uses SMTP (works with Gmail App Passwords, SendGrid, Mailgun, etc.)
-Configure SMTP_USER + SMTP_PASSWORD in .env to enable. Silently skips if not configured.
+Email service — uses SendGrid HTTP API.
+Set SENDGRID_API_KEY in env to enable. Silently skips if not configured.
 """
-import smtplib
-import asyncio
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import httpx
 from ..config import settings
 
 logger = logging.getLogger(__name__)
 
 
 async def send_email(to: str, subject: str, html: str) -> None:
-    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.warning(f"Email not configured (SMTP_USER or SMTP_PASSWORD missing) — skipping send to {to}: {subject}")
+    api_key = getattr(settings, "SENDGRID_API_KEY", None)
+    if not api_key:
+        logger.warning(f"SENDGRID_API_KEY not set — skipping email to {to}: {subject}")
         return
-    logger.info(f"Sending email to {to}: {subject} via {settings.SMTP_HOST}:{settings.SMTP_PORT} as {settings.SMTP_USER}")
+
+    logger.info(f"Sending email to {to}: {subject}")
+    payload = {
+        "personalizations": [{"to": [{"email": to}]}],
+        "from": {"email": settings.FROM_EMAIL, "name": settings.FROM_NAME},
+        "subject": subject,
+        "content": [{"type": "text/html", "value": html}],
+    }
     try:
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, _send_sync, to, subject, html)
-    except RuntimeError:
-        _send_sync(to, subject, html)
-
-
-def _send_sync(to: str, subject: str, html: str) -> None:
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"{settings.FROM_NAME} <{settings.FROM_EMAIL}>"
-        msg["To"] = to
-        msg.attach(MIMEText(html, "html"))
-
-        if settings.SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as smtp:
-                smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                smtp.sendmail(settings.FROM_EMAIL, to, msg.as_string())
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                json=payload,
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+        if resp.status_code in (200, 202):
+            logger.info(f"Email sent to {to}: {subject}")
         else:
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as smtp:
-                smtp.ehlo()
-                smtp.starttls()
-                smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                smtp.sendmail(settings.FROM_EMAIL, to, msg.as_string())
-        logger.info(f"Email sent to {to}: {subject}")
+            logger.error(f"SendGrid error {resp.status_code}: {resp.text}")
     except Exception as e:
         logger.error(f"Failed to send email to {to}: {e}")
 
@@ -119,7 +109,7 @@ async def send_password_reset_email(to: str, name: str, token: str) -> None:
 
 async def send_match_notification(to: str, name: str, match_name: str) -> None:
     content = f"""
-    <h2 style="color:#4A1520;font-family:Georgia,serif;margin:0 0 8px;">💘 It's a Match!</h2>
+    <h2 style="color:#4A1520;font-family:Georgia,serif;margin:0 0 8px;">It's a Match!</h2>
     <p style="color:#722F37;margin:0 0 24px;">Hey {name}, you and <strong>{match_name}</strong> both liked each other.</p>
     <a href="{settings.FRONTEND_URL}/matches"
        style="display:inline-block;background:#722F37;color:#FAF7F2;padding:14px 32px;border-radius:16px;font-weight:600;text-decoration:none;margin-bottom:24px;">

@@ -14,11 +14,8 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: Optional[str] = None
     CLOUDINARY_API_SECRET: Optional[str] = None
 
-    # Email (SMTP) — works with Gmail App Passwords, SendGrid, Mailgun, etc.
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
+    # Email — SendGrid HTTP API
+    SENDGRID_API_KEY: Optional[str] = None
     FROM_EMAIL: str = "noreply@lovemaxxing.com"
     FROM_NAME: str = "Lovemaxxing"
 
