@@ -6,16 +6,19 @@ import logging
 import httpx
 from ..config import settings
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def send_email(to: str, subject: str, html: str) -> None:
     api_key = getattr(settings, "SENDGRID_API_KEY", None)
+    print(f"[EMAIL] send_email called. to={to} api_key_set={bool(api_key)}", flush=True)
     if not api_key:
-        logger.warning(f"SENDGRID_API_KEY not set — skipping email to {to}: {subject}")
+        print(f"[EMAIL] SENDGRID_API_KEY not set — skipping", flush=True)
         return
 
-    logger.info(f"Sending email to {to}: {subject}")
+    print(f"[EMAIL] Sending to {to} via SendGrid HTTP API", flush=True)
     payload = {
         "personalizations": [{"to": [{"email": to}]}],
         "from": {"email": settings.FROM_EMAIL, "name": settings.FROM_NAME},

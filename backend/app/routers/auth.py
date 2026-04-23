@@ -104,6 +104,7 @@ async def resend_verification(background_tasks: BackgroundTasks, current_user: U
     current_user.email_token_expires = email_token_expires
     db.commit()
 
+    print(f"[AUTH] Queuing verification email for {current_user.email}", flush=True)
     background_tasks.add_task(send_verification_email, current_user.email, current_user.name, email_token)
     return {"message": "Verification email sent"}
 
