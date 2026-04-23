@@ -14,10 +14,14 @@ logger = logging.getLogger(__name__)
 
 async def send_email(to: str, subject: str, html: str) -> None:
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.info(f"Email not configured — skipping send to {to}: {subject}")
+        logger.warning(f"Email not configured (SMTP_USER or SMTP_PASSWORD missing) — skipping send to {to}: {subject}")
         return
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _send_sync, to, subject, html)
+    logger.info(f"Sending email to {to}: {subject} via {settings.SMTP_HOST}:{settings.SMTP_PORT} as {settings.SMTP_USER}")
+    try:
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, _send_sync, to, subject, html)
+    except RuntimeError:
+        _send_sync(to, subject, html)
 
 
 def _send_sync(to: str, subject: str, html: str) -> None:
