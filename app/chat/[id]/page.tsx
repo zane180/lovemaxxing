@@ -132,7 +132,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 flex flex-col max-w-2xl mx-auto">
+    <div className="h-screen h-dvh bg-cream-100 flex flex-col max-w-2xl mx-auto overflow-hidden">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-cream-300 px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">

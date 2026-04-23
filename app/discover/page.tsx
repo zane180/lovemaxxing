@@ -246,7 +246,7 @@ export default function DiscoverPage() {
       </div>
 
       {/* Card stack */}
-      <div className="flex-1 px-4 pb-4 flex flex-col items-center justify-center">
+      <div className="flex-1 px-4 pb-2 flex flex-col items-center justify-center">
         {loading ? (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-3 border-cream-300 border-t-burgundy-900 rounded-full animate-spin" />
@@ -285,8 +285,8 @@ export default function DiscoverPage() {
 
       {/* Action buttons */}
       {!loading && !swipedAll && profiles.length > 0 && (
-        <div className="pb-safe-bottom pb-6 px-6">
-          <div className="flex items-center justify-center gap-6 mb-6">
+        <div className="pb-28 px-6">
+          <div className="flex items-center justify-center gap-6">
             <button
               onClick={() => currentProfile && handleSwipe('left', currentProfile)}
               className="w-14 h-14 rounded-full bg-white shadow-card border border-cream-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
