@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Send, Heart, MoreVertical } from 'lucide-react'
@@ -8,6 +8,10 @@ import { api } from '@/lib/api'
 import { useAuthStore } from '@/lib/store'
 import type { Message, Profile } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
+import ReportModal from '@/components/ReportModal'
+import { API_BASE_URL } from '@/lib/constants'
+
+const WS_BASE = API_BASE_URL.replace(/^http/, 'ws')
 
 export default function ChatPage() {
   const { id } = useParams()
@@ -18,16 +22,43 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [matchId, setMatchId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     loadChat()
+    return () => {
+      wsRef.current?.close()
+    }
   }, [id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const connectWebSocket = useCallback((mId: string) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('lovemaxxing_token') : null
+    if (!token) return
+
+    const ws = new WebSocket(`${WS_BASE}/chat/ws/${mId}?token=${token}`)
+    wsRef.current = ws
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data) as Message
+      setMessages((prev) => {
+        // Deduplicate — avoid adding if already exists (from optimistic update)
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
+    }
+
+    ws.onerror = () => {
+      // Silently fall back to HTTP polling
+    }
+  }, [])
 
   const loadChat = async () => {
     try {
@@ -37,6 +68,16 @@ export default function ChatPage() {
       ])
       setProfile(profileRes.data)
       setMessages(msgRes.data.messages)
+
+      // Find match ID for WebSocket
+      const matchesRes = await api.get('/matching/matches')
+      const match = matchesRes.data.matches?.find(
+        (m: any) => m.profile.id === id
+      )
+      if (match) {
+        setMatchId(match.id)
+        connectWebSocket(match.id)
+      }
     } catch {
       setProfile(DEMO_PROFILE)
       setMessages(DEMO_MESSAGES)
@@ -60,7 +101,8 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, optimistic])
 
     try {
-      const res = await api.post(`/chat/${id}/messages`, { content })
+      const targetId = matchId || id as string
+      const res = await api.post(`/chat/${targetId}/messages`, { content })
       setMessages((prev) => prev.map((m) => m.id === optimistic.id ? res.data : m))
     } catch {
       // Keep optimistic message in demo mode
@@ -75,6 +117,10 @@ export default function ChatPage() {
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  const handleBlocked = () => {
+    router.push('/matches')
   }
 
   if (loading) {
@@ -109,14 +155,17 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <button className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
+        <button
+          onClick={() => setShowReport(true)}
+          className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors"
+          aria-label="More options"
+        >
           <MoreVertical className="w-5 h-5" />
         </button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-        {/* Match banner */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-900/10 rounded-full">
             <Heart className="w-4 h-4 text-burgundy-900 fill-burgundy-900" />
@@ -184,6 +233,16 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
+
+      {/* Report/Block modal */}
+      {showReport && profile && (
+        <ReportModal
+          userId={profile.id}
+          userName={profile.name}
+          onClose={() => setShowReport(false)}
+          onBlocked={handleBlocked}
+        />
+      )}
     </div>
   )
 }

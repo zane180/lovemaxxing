@@ -338,9 +338,9 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-burgundy-800/50">© 2025 Lovemaxxing. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Privacy</a>
-            <a href="#" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Terms</a>
-            <a href="#" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Contact</a>
+            <Link href="/privacy" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Terms</Link>
+            <a href="mailto:support@lovemaxxing.com" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Contact</a>
           </div>
         </div>
       </footer>

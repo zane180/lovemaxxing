@@ -44,6 +44,9 @@ module.exports = {
         'gradient-luxury': 'linear-gradient(135deg, #722F37 0%, #4A1520 100%)',
         'gradient-cream': 'linear-gradient(180deg, #FAF7F2 0%, #F5F0E8 100%)',
       },
+      borderWidth: {
+        '3': '3px',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.4s ease-out',
@@ -85,5 +88,16 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.pt-safe-top': {
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 1.5rem)',
+        },
+        '.pb-safe-bottom': {
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)',
+        },
+      })
+    },
+  ],
 }

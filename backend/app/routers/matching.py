@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
 from ..database import get_db
-from ..models import User, Swipe, Match
+from ..models import User, Swipe, Match, Block
 from ..schemas import SwipeRequest, SwipeResponse, MatchOut, ProfileOut
 from ..auth import get_current_user
 from ..services.matching_engine import get_candidates, compute_match_score
+from ..services.email import send_match_notification
 
 router = APIRouter()
 
@@ -16,7 +16,6 @@ def discover(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get ranked candidate profiles for the swipe stack."""
     scored_candidates = get_candidates(current_user, db)
 
     profiles = []
@@ -40,12 +39,11 @@ def discover(
 
 
 @router.post("/swipe", response_model=SwipeResponse)
-def swipe(
+async def swipe(
     body: SwipeRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Record a swipe and check for mutual match."""
     if body.target_id == current_user.id:
         raise HTTPException(status_code=400, detail="Cannot swipe on yourself")
 
@@ -61,16 +59,14 @@ def swipe(
     if existing:
         raise HTTPException(status_code=400, detail="Already swiped on this user")
 
-    # Record swipe
-    swipe = Swipe(
+    swipe_record = Swipe(
         swiper_id=current_user.id,
         target_id=body.target_id,
         direction=body.direction,
     )
-    db.add(swipe)
+    db.add(swipe_record)
     db.commit()
 
-    # Check for mutual right swipe
     if body.direction in ("right", "super"):
         mutual = db.query(Swipe).filter(
             Swipe.swiper_id == body.target_id,
@@ -79,7 +75,6 @@ def swipe(
         ).first()
 
         if mutual:
-            # Check if match already exists
             existing_match = db.query(Match).filter(
                 ((Match.user1_id == current_user.id) & (Match.user2_id == body.target_id)) |
                 ((Match.user1_id == body.target_id) & (Match.user2_id == current_user.id))
@@ -95,6 +90,12 @@ def swipe(
                 db.add(match)
                 db.commit()
                 db.refresh(match)
+
+                # Send match notification emails (non-blocking)
+                import asyncio
+                asyncio.create_task(send_match_notification(current_user.email, current_user.name, target.name))
+                asyncio.create_task(send_match_notification(target.email, target.name, current_user.name))
+
                 return SwipeResponse(matched=True, match_id=match.id, match_score=score)
 
     return SwipeResponse(matched=False)
@@ -105,15 +106,21 @@ def get_matches(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get all matches for current user."""
     matches = db.query(Match).filter(
         (Match.user1_id == current_user.id) | (Match.user2_id == current_user.id)
     ).order_by(Match.created_at.desc()).all()
 
+    # Get IDs of users blocked by current user
+    blocked_ids = {
+        b.blocked_id for b in db.query(Block).filter(Block.blocker_id == current_user.id).all()
+    }
+
     result = []
     for match in matches:
-        # Get the other user
         other = match.user2 if match.user1_id == current_user.id else match.user1
+        # Hide matches with blocked users
+        if other.id in blocked_ids:
+            continue
 
         last_msg = None
         unread = 0

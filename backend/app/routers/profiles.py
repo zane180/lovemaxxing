@@ -90,6 +90,24 @@ async def complete_onboarding(
     return current_user
 
 
+@router.delete("/me", status_code=204)
+def delete_account(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Soft-delete the account — marks inactive and clears PII."""
+    current_user.is_active = False
+    current_user.email = f"deleted_{current_user.id}@deleted.lovemaxxing.com"
+    current_user.name = "Deleted User"
+    current_user.bio = None
+    current_user.photos = []
+    current_user.interests = []
+    current_user.vibes = []
+    current_user.analyzed_features = []
+    current_user.type_preferences = []
+    db.commit()
+
+
 @router.get("/{user_id}", response_model=ProfileOut)
 def get_profile(
     user_id: str,

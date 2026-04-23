@@ -82,7 +82,7 @@ export default function ProfilePage() {
       {/* Header cover */}
       <div className="h-40 bg-gradient-luxury relative">
         <div className="absolute top-4 right-4 flex gap-2">
-          <button className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-cream-100 hover:bg-white/30 transition-colors">
+          <button onClick={() => router.push('/settings')} className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-cream-100 hover:bg-white/30 transition-colors">
             <Settings className="w-4 h-4" />
           </button>
           <button
