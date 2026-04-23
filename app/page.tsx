@@ -336,11 +336,11 @@ export default function LandingPage() {
             <Heart className="w-5 h-5 text-burgundy-900 fill-burgundy-900" />
             <span className="font-serif font-bold text-burgundy-950">Lovemaxxing</span>
           </div>
-          <p className="text-sm text-burgundy-800/50">© 2025 Lovemaxxing. All rights reserved.</p>
+          <p className="text-sm text-burgundy-800/50">© 2026 Lovemaxxing. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Privacy</Link>
             <Link href="/terms" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Terms</Link>
-            <a href="mailto:support@lovemaxxing.com" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Contact</a>
+            <a href="mailto:lovemaxxingbeta@gmail.com" className="text-sm text-burgundy-800/50 hover:text-burgundy-900 transition-colors">Contact</a>
           </div>
         </div>
       </footer>
