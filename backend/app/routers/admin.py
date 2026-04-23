@@ -67,19 +67,26 @@ def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     if hard:
-        db.query(Message).filter(Message.sender_id == user_id).delete()
+        # Get all match IDs involving this user
+        match_ids = [m.id for m in db.query(Match).filter(
+            (Match.user1_id == user_id) | (Match.user2_id == user_id)
+        ).all()]
+        # Delete all messages in those matches first
+        if match_ids:
+            db.query(Message).filter(Message.match_id.in_(match_ids)).delete(synchronize_session=False)
+        # Delete matches
         db.query(Match).filter(
             (Match.user1_id == user_id) | (Match.user2_id == user_id)
-        ).delete()
+        ).delete(synchronize_session=False)
         db.query(Swipe).filter(
             (Swipe.swiper_id == user_id) | (Swipe.target_id == user_id)
-        ).delete()
+        ).delete(synchronize_session=False)
         db.query(Block).filter(
             (Block.blocker_id == user_id) | (Block.blocked_id == user_id)
-        ).delete()
+        ).delete(synchronize_session=False)
         db.query(Report).filter(
             (Report.reporter_id == user_id) | (Report.reported_id == user_id)
-        ).delete()
+        ).delete(synchronize_session=False)
         db.delete(user)
         db.commit()
         return {"message": f"User {user_id} permanently deleted"}
