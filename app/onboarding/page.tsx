@@ -120,7 +120,7 @@ export default function OnboardingPage() {
       const res = await api.post('/profiles/complete-onboarding', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      setUser(res.data.user)
+      setUser(res.data)
       toast.success('Profile complete! Finding your matches...')
       router.push('/discover')
     } catch {
