@@ -22,6 +22,10 @@ export interface User extends Profile {
   gender: string
   interested_in: string
   onboarding_complete: boolean
+  email_verified: boolean
+  min_age: number
+  max_age: number
+  show_me: boolean
 }
 
 export interface Message {
