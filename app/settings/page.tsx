@@ -148,7 +148,7 @@ export default function SettingsPage() {
               onClick={toggleDark}
               className={`w-12 h-6 p-0 rounded-full transition-colors duration-200 relative overflow-hidden ${dark ? 'bg-burgundy-900' : 'bg-cream-400'}`}
             >
-              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${dark ? 'right-1' : 'left-1'}`} />
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${dark ? 'left-7' : 'left-1'}`} />
             </button>
           </div>
         </section>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
               onClick={() => setShowMe((v) => !v)}
               className={`w-12 h-6 p-0 rounded-full transition-colors duration-200 relative overflow-hidden ${showMe ? 'bg-burgundy-900' : 'bg-cream-400'}`}
             >
-              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${showMe ? 'right-1' : 'left-1'}`} />
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${showMe ? 'left-7' : 'left-1'}`} />
             </button>
           </div>
 
