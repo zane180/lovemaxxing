@@ -78,7 +78,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 pb-24">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
       {/* Header cover */}
       <div className="h-40 bg-gradient-luxury relative">
         <div className="absolute top-4 right-4 flex gap-2">
@@ -97,7 +97,7 @@ export default function ProfilePage() {
       <div className="px-6 -mt-16 relative z-10">
         {/* Avatar */}
         <div className="relative inline-block mb-4">
-          <div className="w-32 h-32 rounded-full border-4 border-cream-100 overflow-hidden bg-gradient-luxury shadow-luxury">
+          <div className="w-32 h-32 rounded-full border-4 border-cream-100 dark:border-[#120608] overflow-hidden bg-gradient-luxury shadow-luxury">
             {user?.photos?.[0] ? (
               <img src={user.photos[0]} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -116,7 +116,7 @@ export default function ProfilePage() {
 
         {/* Name & info */}
         <div className="mb-6">
-          <h1 className="font-serif text-2xl font-bold text-burgundy-950">
+          <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100">
             {user?.name}{age ? `, ${age}` : ''}
           </h1>
           {user?.city && <p className="text-burgundy-800/60 text-sm mt-1">{user.city}</p>}

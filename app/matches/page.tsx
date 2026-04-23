@@ -37,10 +37,10 @@ export default function MatchesPage() {
   const conversations = filtered.filter((m) => m.last_message)
 
   return (
-    <div className="min-h-screen bg-cream-100 pb-24">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-cream-100/90 backdrop-blur-sm border-b border-cream-300 px-6 pt-safe-top pt-6 pb-4">
-        <h1 className="font-serif text-2xl font-bold text-burgundy-950 mb-4">Matches</h1>
+      <div className="sticky top-0 z-10 bg-cream-100/90 dark:bg-[#120608]/90 backdrop-blur-sm border-b border-cream-300 dark:border-[#3D1E24] px-6 pt-safe-top pt-6 pb-4">
+        <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100 mb-4">Matches</h1>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-burgundy-800/40" />
           <input
@@ -126,7 +126,7 @@ export default function MatchesPage() {
                   >
                     <Link
                       href={`/chat/${match.profile.id}`}
-                      className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-card hover:shadow-luxury transition-all duration-200"
+                      className="flex items-center gap-4 p-4 bg-white dark:bg-[#1E0C10] rounded-2xl shadow-card dark:shadow-none border border-transparent dark:border-[#3D1E24] hover:shadow-luxury transition-all duration-200"
                     >
                       <div className="relative flex-shrink-0">
                         {match.profile.photos[0] ? (
@@ -150,7 +150,7 @@ export default function MatchesPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="font-semibold text-burgundy-950">{match.profile.name}</p>
+                          <p className="font-semibold text-burgundy-950 dark:text-cream-100">{match.profile.name}</p>
                           {match.last_message && (
                             <p className="text-xs text-burgundy-800/40">
                               {formatDistanceToNow(new Date(match.last_message.created_at), { addSuffix: true })}

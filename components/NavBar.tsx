@@ -14,7 +14,7 @@ type NavKey = typeof NAV_ITEMS[number]['key']
 
 export default function NavBar({ active }: { active: NavKey }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-cream-300 pb-safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#1E0C10]/95 backdrop-blur-md border-t border-cream-300 dark:border-[#3D1E24] pb-safe-bottom">
       <div className="max-w-lg mx-auto flex items-center justify-around px-4 py-2">
         {NAV_ITEMS.map(({ href, icon: Icon, label, key }) => {
           const isActive = active === key

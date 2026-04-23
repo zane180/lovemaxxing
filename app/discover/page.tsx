@@ -236,10 +236,10 @@ export default function DiscoverPage() {
   const secondProfile = profiles[profiles.length - 2]
 
   return (
-    <div className="min-h-screen bg-cream-100 flex flex-col">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] flex flex-col">
       {/* Header */}
       <div className="px-6 pt-safe-top pt-6 pb-4 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-bold text-burgundy-950">Discover</h1>
+        <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100">Discover</h1>
         <button onClick={loadProfiles} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
           <RotateCcw className="w-5 h-5" />
         </button>

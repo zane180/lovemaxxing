@@ -132,9 +132,9 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen h-dvh bg-cream-100 flex flex-col max-w-2xl mx-auto overflow-hidden">
+    <div className="h-screen h-dvh bg-cream-100 dark:bg-[#120608] flex flex-col max-w-2xl mx-auto overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-cream-300 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-white dark:bg-[#1E0C10] border-b border-cream-300 dark:border-[#3D1E24] px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -148,7 +148,7 @@ export default function ChatPage() {
             </div>
           )}
           <div>
-            <p className="font-semibold text-burgundy-950 text-sm">{profile?.name}</p>
+            <p className="font-semibold text-burgundy-950 dark:text-cream-100 text-sm">{profile?.name}</p>
             {profile?.match_score && (
               <p className="text-xs text-gold-500 font-medium">{profile.match_score}% match</p>
             )}
@@ -196,7 +196,7 @@ export default function ChatPage() {
                     className={`px-4 py-3 rounded-3xl text-sm leading-relaxed ${
                       isMe
                         ? 'bg-burgundy-900 text-cream-100 rounded-br-sm'
-                        : 'bg-white text-burgundy-950 shadow-card rounded-bl-sm'
+                        : 'bg-white dark:bg-[#2A1218] text-burgundy-950 dark:text-cream-100 shadow-card dark:shadow-none rounded-bl-sm'
                     }`}
                   >
                     {msg.content}
@@ -213,7 +213,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-white border-t border-cream-300 px-4 py-3 pb-safe-bottom">
+      <div className="sticky bottom-0 bg-white dark:bg-[#1E0C10] border-t border-cream-300 dark:border-[#3D1E24] px-4 py-3 pb-safe-bottom">
         <div className="flex items-center gap-3">
           <input
             ref={inputRef}

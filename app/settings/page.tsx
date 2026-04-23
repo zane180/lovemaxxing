@@ -3,16 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Eye, EyeOff, ChevronRight, Trash2, Shield, Bell, Search, LogOut } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, ChevronRight, Trash2, Shield, Search, LogOut, Moon } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import NavBar from '@/components/NavBar'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
+import { useDarkMode } from '@/lib/useDarkMode'
 
 export default function SettingsPage() {
   const router = useRouter()
   const { user, setUser, clearAuth } = useAuthStore()
+  const { dark, toggle: toggleDark } = useDarkMode()
 
   // Discovery prefs
   const [minAge, setMinAge] = useState(user?.min_age ?? 18)
@@ -106,13 +108,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 pb-24">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-cream-100/90 backdrop-blur-sm border-b border-cream-300 px-6 pt-6 pb-4 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-cream-100/90 dark:bg-[#120608]/90 backdrop-blur-sm border-b border-cream-300 dark:border-[#3D1E24] px-6 pt-6 pb-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-serif text-xl font-bold text-burgundy-950">Settings</h1>
+        <h1 className="font-serif text-xl font-bold text-burgundy-950 dark:text-cream-100">Settings</h1>
       </div>
 
       <div className="max-w-xl mx-auto px-6 py-6 space-y-6">
@@ -130,6 +132,25 @@ export default function SettingsPage() {
             </button>
           </div>
         )}
+
+        {/* Appearance */}
+        <section className="card-luxury">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Moon className="w-5 h-5 text-burgundy-900 dark:text-gold-400" />
+              <div>
+                <p className="text-sm font-medium text-burgundy-950 dark:text-cream-100">Dark Mode</p>
+                <p className="text-xs text-burgundy-800/50 dark:text-cream-300/50">Easy on the eyes at night</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleDark}
+              className={`w-12 h-6 rounded-full transition-colors duration-200 relative ${dark ? 'bg-burgundy-900' : 'bg-cream-400'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${dark ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
+          </div>
+        </section>
 
         {/* Discovery Preferences */}
         <section className="card-luxury space-y-5">

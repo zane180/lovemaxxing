@@ -27,6 +27,12 @@ body {
   font-family: var(--font-inter);
   background-color: var(--cream);
   color: var(--burgundy-dark);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
+  background-color: #120608;
+  color: #FAF7F2;
 }
 
 /* Scrollbar */
@@ -68,17 +74,17 @@ body {
   }
 
   .card {
-    @apply bg-white rounded-3xl shadow-card p-6;
+    @apply bg-white dark:bg-[#1E0C10] rounded-3xl shadow-card dark:shadow-none p-6;
   }
 
   .card-luxury {
-    @apply bg-white rounded-3xl shadow-luxury p-6 border border-cream-300;
+    @apply bg-white dark:bg-[#1E0C10] rounded-3xl shadow-luxury dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] p-6 border border-cream-300 dark:border-[#3D1E24];
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-2xl border border-cream-400 bg-cream-50
+    @apply w-full px-4 py-3 rounded-2xl border border-cream-400 dark:border-[#4D2830] bg-cream-50 dark:bg-[#2A1218]
            focus:outline-none focus:ring-2 focus:ring-burgundy-900 focus:border-transparent
-           text-burgundy-950 placeholder:text-cream-500 transition-all duration-200;
+           text-burgundy-950 dark:text-cream-100 placeholder:text-cream-500 dark:placeholder:text-cream-300/40 transition-all duration-200;
   }
 
   .tag {
@@ -91,7 +97,7 @@ body {
   }
 
   .tag-inactive {
-    @apply bg-cream-200 text-burgundy-900 hover:bg-cream-300;
+    @apply bg-cream-200 dark:bg-[#2A1218] text-burgundy-900 dark:text-cream-200 hover:bg-cream-300 dark:hover:bg-[#3D1E24];
   }
 
   .gradient-text {
