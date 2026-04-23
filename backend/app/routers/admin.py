@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from ..database import get_db
-from ..models import User, Match, Message, Swipe, Block, Report
+from ..models import User, Match, Message, Swipe, Block, Report, PasswordResetToken
 from ..config import settings
 
 router = APIRouter()
@@ -86,6 +86,9 @@ def delete_user(
         ).delete(synchronize_session=False)
         db.query(Report).filter(
             (Report.reporter_id == user_id) | (Report.reported_id == user_id)
+        ).delete(synchronize_session=False)
+        db.query(PasswordResetToken).filter(
+            PasswordResetToken.user_id == user_id
         ).delete(synchronize_session=False)
         db.delete(user)
         db.commit()
