@@ -32,11 +32,16 @@ def _send_sync(to: str, subject: str, html: str) -> None:
         msg["To"] = to
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            smtp.sendmail(settings.FROM_EMAIL, to, msg.as_string())
+        if settings.SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as smtp:
+                smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                smtp.sendmail(settings.FROM_EMAIL, to, msg.as_string())
+        else:
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                smtp.sendmail(settings.FROM_EMAIL, to, msg.as_string())
         logger.info(f"Email sent to {to}: {subject}")
     except Exception as e:
         logger.error(f"Failed to send email to {to}: {e}")
