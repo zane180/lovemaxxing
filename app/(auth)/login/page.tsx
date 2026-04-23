@@ -15,10 +15,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     try {
       const res = await api.post('/auth/login', form)
       setUser(res.data.user)
@@ -26,7 +28,7 @@ export default function LoginPage() {
       toast.success('Welcome back!')
       router.push('/discover')
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Invalid credentials')
+      setError(err.response?.data?.detail || 'Invalid email or password')
     } finally {
       setLoading(false)
     }
@@ -89,6 +91,12 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+                {error}
+              </p>
+            )}
 
             <div className="flex justify-end">
               <Link href="/forgot-password" className="text-sm text-burgundy-900 hover:underline">Forgot password?</Link>
