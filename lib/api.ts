@@ -19,11 +19,13 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 globally
+// Handle 401 globally — but not on auth endpoints (wrong password should show inline error)
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    const url = error.config?.url || ''
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/signup') || url.includes('/auth/forgot-password') || url.includes('/auth/reset-password')
+    if (error.response?.status === 401 && !isAuthEndpoint && typeof window !== 'undefined') {
       localStorage.removeItem('lovemaxxing_token')
       localStorage.removeItem('lovemaxxing_user')
       window.location.href = '/login'
