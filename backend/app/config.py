@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Frontend URL (used in email links)
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Admin
+    ADMIN_SECRET: Optional[str] = None
+
     class Config:
         env_file = ".env"
 

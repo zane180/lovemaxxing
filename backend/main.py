@@ -10,6 +10,7 @@ import os
 from app.database import engine, Base
 from app.routers import auth, profiles, matching, chat
 from app.routers.safety import router as safety_router
+from app.routers.admin import router as admin_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -50,6 +51,7 @@ app.include_router(profiles.router, prefix="/profiles", tags=["profiles"])
 app.include_router(matching.router, prefix="/matching", tags=["matching"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(safety_router, prefix="/safety", tags=["safety"])
+app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 
 @app.get("/")
