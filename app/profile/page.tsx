@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import { Camera, Edit3, Settings, LogOut, Star, Heart, Sparkles, Check, X } from 'lucide-react'
@@ -19,6 +19,16 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [editingInterests, setEditingInterests] = useState(false)
   const [interests, setInterests] = useState<string[]>(user?.interests || [])
+  const [stats, setStats] = useState(user?.stats ?? { matches: 0, likes: 0, avg_score: 0 })
+
+  useEffect(() => {
+    if (user?.interests) setInterests(user.interests)
+    if (user?.bio !== undefined) setBio(user.bio || '')
+  }, [user?.interests?.join(','), user?.bio])
+
+  useEffect(() => {
+    api.get('/profiles/me/stats').then((res) => setStats(res.data)).catch(() => {})
+  }, [])
 
   const age = user?.birthdate
     ? new Date().getFullYear() - new Date(user.birthdate).getFullYear()
@@ -125,9 +135,9 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Matches', value: user?.stats?.matches ?? 0, icon: Heart },
-            { label: 'Likes', value: user?.stats?.likes ?? 0, icon: Star },
-            { label: 'Score', value: `${user?.stats?.avg_score ?? 0}%`, icon: Sparkles },
+            { label: 'Matches', value: stats.matches, icon: Heart },
+            { label: 'Likes', value: stats.likes, icon: Star },
+            { label: 'Score', value: `${stats.avg_score}%`, icon: Sparkles },
           ].map((stat) => {
             const Icon = stat.icon
             return (
@@ -153,7 +163,7 @@ export default function ProfilePage() {
               </button>
             ) : (
               <div className="flex gap-2">
-                <button onClick={() => setEditing(false)}>
+                <button onClick={() => { setEditing(false); setBio(user?.bio || '') }}>
                   <X className="w-4 h-4 text-burgundy-800/60" />
                 </button>
                 <button onClick={saveBio} disabled={saving}>
@@ -194,7 +204,7 @@ export default function ProfilePage() {
               </button>
             ) : (
               <div className="flex gap-2">
-                <button onClick={() => setEditingInterests(false)}>
+                <button onClick={() => { setEditingInterests(false); setInterests(user?.interests || []) }}>
                   <X className="w-4 h-4 text-burgundy-800/60" />
                 </button>
                 <button onClick={saveInterests}>
@@ -225,10 +235,10 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {(interests.length > 0 ? interests : user?.interests || []).map((interest) => (
+              {(user?.interests || []).map((interest) => (
                 <span key={interest} className="tag tag-active text-sm">{interest}</span>
               ))}
-              {interests.length === 0 && (
+              {(user?.interests || []).length === 0 && (
                 <p className="text-sm text-burgundy-800/50">No interests added yet.</p>
               )}
             </div>

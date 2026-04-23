@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func as sqlfunc
 from typing import List, Optional
 import json
 
 from ..database import get_db
-from ..models import User
+from ..models import User, Match, Swipe
 from ..schemas import ProfileUpdate, ProfileOut, UserOut
 from ..auth import get_current_user
 from ..services.face_analysis import analyze_face_features
@@ -16,6 +17,29 @@ router = APIRouter()
 @router.get("/me", response_model=UserOut)
 def get_my_profile(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.get("/me/stats")
+def get_my_stats(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    matches_count = db.query(Match).filter(
+        or_(Match.user1_id == current_user.id, Match.user2_id == current_user.id)
+    ).count()
+
+    likes_count = db.query(Swipe).filter(
+        Swipe.target_id == current_user.id,
+        Swipe.direction.in_(['right', 'super'])
+    ).count()
+
+    avg_score_result = db.query(sqlfunc.avg(Match.match_score)).filter(
+        or_(Match.user1_id == current_user.id, Match.user2_id == current_user.id),
+        Match.match_score.isnot(None)
+    ).scalar()
+
+    return {
+        "matches": matches_count,
+        "likes": likes_count,
+        "avg_score": round(avg_score_result or 0),
+    }
 
 
 @router.patch("/me", response_model=UserOut)

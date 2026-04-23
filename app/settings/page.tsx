@@ -96,6 +96,7 @@ export default function SettingsPage() {
     try {
       await api.post('/auth/resend-verification')
       toast.success('Verification email sent!')
+      setTimeout(() => toast('Also check your spam folder', { icon: '📬' }), 800)
     } catch {
       toast.error('Failed to send email')
     }
@@ -145,9 +146,9 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={toggleDark}
-              className={`w-12 h-6 rounded-full transition-colors duration-200 relative ${dark ? 'bg-burgundy-900' : 'bg-cream-400'}`}
+              className={`w-12 h-6 p-0 rounded-full transition-colors duration-200 relative overflow-hidden ${dark ? 'bg-burgundy-900' : 'bg-cream-400'}`}
             >
-              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${dark ? 'translate-x-7' : 'translate-x-1'}`} />
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${dark ? 'right-1' : 'left-1'}`} />
             </button>
           </div>
         </section>
@@ -209,9 +210,9 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setShowMe((v) => !v)}
-              className={`w-12 h-6 rounded-full transition-colors duration-200 relative ${showMe ? 'bg-burgundy-900' : 'bg-cream-400'}`}
+              className={`w-12 h-6 p-0 rounded-full transition-colors duration-200 relative overflow-hidden ${showMe ? 'bg-burgundy-900' : 'bg-cream-400'}`}
             >
-              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${showMe ? 'translate-x-7' : 'translate-x-1'}`} />
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${showMe ? 'right-1' : 'left-1'}`} />
             </button>
           </div>
 

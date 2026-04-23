@@ -17,7 +17,8 @@ export default function EmailBanner() {
     setSending(true)
     try {
       await api.post('/auth/resend-verification')
-      toast.success('Verification email sent! Check your inbox.')
+      toast.success('Verification email sent!')
+      setTimeout(() => toast('Also check your spam folder', { icon: '📬' }), 800)
       setDismissed(true)
     } catch {
       toast.error('Failed to send. Try again.')
