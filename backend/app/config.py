@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Frontend URL (used in email links)
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Anthropic (face analysis)
+    ANTHROPIC_API_KEY: Optional[str] = None
+
     # Admin
     ADMIN_SECRET: Optional[str] = None
 

@@ -1,111 +1,115 @@
 """
-Face analysis service using DeepFace.
-Detects facial attributes (shape, features, dominant emotion, age, etc.)
-and maps them to human-readable descriptors for matching.
+Face analysis service using Claude's vision API.
+Detects facial attributes and maps them to the exact feature descriptors
+used in the matching engine and frontend constants.
 """
-import io
+import base64
+import json
 import logging
 from typing import List
 from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 
+# Must exactly match FACE_FEATURES in lib/constants.ts
+VALID_FEATURES = [
+    # Face Shape
+    "Oval", "Round", "Square", "Heart", "Diamond", "Oblong",
+    # Eyes
+    "Almond eyes", "Doe eyes", "Hooded eyes", "Upturned eyes", "Deep-set", "Wide-set",
+    # Jawline
+    "Defined jawline", "Soft jaw", "Strong jaw", "Sharp chin",
+    # Features
+    "High cheekbones", "Full lips", "Thin lips", "Strong brows", "Freckles", "Dimples", "Button nose", "Aquiline nose",
+    # Skin Tone
+    "Fair", "Light", "Medium", "Olive", "Tan", "Brown", "Deep",
+    # Build Indicators
+    "Athletic", "Slim", "Curvy", "Petite", "Tall features",
+]
+
+FEATURE_LIST_TEXT = "\n".join(f"- {f}" for f in VALID_FEATURES)
+
+ANALYSIS_PROMPT = f"""Analyze the facial features visible in this photo. Select only features that are clearly apparent.
+
+Choose from this exact list only:
+{FEATURE_LIST_TEXT}
+
+Rules:
+- Select exactly ONE face shape (Oval, Round, Square, Heart, Diamond, or Oblong)
+- Select exactly ONE skin tone (Fair, Light, Medium, Olive, Tan, Brown, or Deep)
+- Select 3-6 additional features from eyes, jawline, and features categories
+- Only select features that are clearly visible — do not guess
+- Return ONLY a JSON object, no other text: {{"features": ["Oval", "Fair", "Almond eyes", "Defined jawline"]}}
+- Use the exact label text from the list above, character-for-character"""
+
 
 async def analyze_face_features(photo: UploadFile) -> List[str]:
-    """
-    Analyze facial features from an uploaded photo.
-    Returns a list of human-readable feature descriptors.
-    """
     try:
         contents = await photo.read()
-        await photo.seek(0)  # reset for potential re-use
-        return await _analyze_with_deepface(contents)
+        await photo.seek(0)
+        return await _analyze_with_claude(contents)
     except Exception as e:
         logger.warning(f"Face analysis failed: {e}")
-        return _fallback_features()
+        return []
 
 
-async def _analyze_with_deepface(image_bytes: bytes) -> List[str]:
-    """Run DeepFace analysis and convert results to descriptors."""
+async def _analyze_with_claude(image_bytes: bytes) -> List[str]:
     try:
-        import numpy as np
-        from PIL import Image
-        import deepface
-        from deepface import DeepFace
+        import anthropic
 
-        # Load image
-        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        img_array = np.array(img)
+        client = anthropic.Anthropic()
 
-        # Analyze
-        result = DeepFace.analyze(
-            img_path=img_array,
-            actions=["age", "gender", "race", "emotion"],
-            enforce_detection=False,
-            silent=True,
+        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        media_type = _detect_media_type(image_bytes)
+
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=256,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": media_type,
+                                "data": image_b64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": ANALYSIS_PROMPT,
+                        },
+                    ],
+                }
+            ],
         )
 
-        features = []
-        if isinstance(result, list):
-            result = result[0]
+        response_text = message.content[0].text.strip()
 
-        # Age-derived features
-        age = result.get("age", 0)
-        if age < 25:
-            features.append("Youthful features")
-        elif age < 35:
-            features.append("Young adult features")
+        # Extract JSON from response
+        start = response_text.index("{")
+        end = response_text.rindex("}") + 1
+        data = json.loads(response_text[start:end])
+        features = data.get("features", [])
 
-        # Dominant race → skin tone descriptor
-        race_map = {
-            "white": "Fair skin",
-            "black": "Deep skin tone",
-            "asian": "Light skin tone",
-            "middle eastern": "Warm skin tone",
-            "latino hispanic": "Olive skin tone",
-            "indian": "Brown skin tone",
-        }
-        dominant_race = result.get("dominant_race", "").lower()
-        if dominant_race in race_map:
-            features.append(race_map[dominant_race])
-
-        # Attempt geometric face shape analysis
-        face_region = result.get("region", {})
-        if face_region:
-            w = face_region.get("w", 1)
-            h = face_region.get("h", 1)
-            ratio = w / h if h > 0 else 1
-            if ratio > 0.85:
-                features.append("Round face shape")
-            elif ratio < 0.7:
-                features.append("Oval face shape")
-            else:
-                features.append("Balanced face shape")
-
-        # Add some quality descriptors based on emotion confidence
-        emotions = result.get("emotion", {})
-        if emotions:
-            dominant_emotion = result.get("dominant_emotion", "")
-            if dominant_emotion in ("happy", "neutral"):
-                features.append("Warm expression")
-
-        # Pad with common features if we didn't detect enough
-        if len(features) < 3:
-            features.extend(_fallback_features()[:3 - len(features)])
-
-        return features[:6]
+        # Only return labels that exist in our valid set
+        return [f for f in features if f in VALID_FEATURES][:8]
 
     except ImportError:
-        logger.warning("DeepFace not available, using fallback features")
-        return _fallback_features()
+        logger.error("anthropic package not installed — add it to requirements.txt")
+        return []
+    except Exception as e:
+        logger.warning(f"Claude face analysis failed: {e}")
+        return []
 
 
-def _fallback_features() -> List[str]:
-    """Return a default set of features when analysis isn't available."""
-    return [
-        "Symmetrical features",
-        "Defined jawline",
-        "Expressive eyes",
-        "Warm skin tone",
-        "Natural features",
-    ]
+def _detect_media_type(image_bytes: bytes) -> str:
+    if image_bytes[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if image_bytes[:4] == b"RIFF" and image_bytes[8:12] == b"WEBP":
+        return "image/webp"
+    if image_bytes[:3] == b"GIF":
+        return "image/gif"
+    return "image/jpeg"

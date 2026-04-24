@@ -85,14 +85,17 @@ export default function OnboardingPage() {
       const res = await api.post('/profiles/analyze-face', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      setAnalyzedFeatures(res.data.features || [])
+      const features = res.data.features || []
+      setAnalyzedFeatures(features)
       setFaceAnalysisDone(true)
-      toast.success('Face analysis complete!')
+      if (features.length > 0) {
+        toast.success('Face analysis complete!')
+      } else {
+        toast.error('No face detected. Try a clearer photo.')
+        setFaceAnalysisDone(false)
+      }
     } catch {
-      // Fallback: use mock features for demo
-      setAnalyzedFeatures(['Defined jawline', 'Almond eyes', 'High cheekbones', 'Oval face shape', 'Warm undertone'])
-      setFaceAnalysisDone(true)
-      toast.success('Face analysis complete!')
+      toast.error('Analysis failed. Try a clearer photo or skip and continue.')
     } finally {
       setAnalyzing(false)
     }
