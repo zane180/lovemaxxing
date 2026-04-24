@@ -95,7 +95,9 @@ async def _analyze_with_claude(image_bytes: bytes) -> List[str]:
         features = data.get("features", [])
 
         # Only return labels that exist in our valid set
-        return [f for f in features if f in VALID_FEATURES][:8]
+        valid = [f for f in features if f in VALID_FEATURES][:8]
+        logger.info(f"Face analysis result: {valid}")
+        return valid
 
     except ImportError:
         logger.error("anthropic package not installed — add it to requirements.txt")
