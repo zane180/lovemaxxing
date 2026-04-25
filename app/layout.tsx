@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import AppNavBar from '@/components/AppNavBar'
+import AppInit from '@/components/AppInit'
 
 export const metadata: Metadata = {
   title: 'Lovemaxxing — Find Your Perfect Match',
@@ -42,6 +43,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-cream-100 text-burgundy-950 antialiased">
+        <AppInit />
         {children}
         <AppNavBar />
         <Toaster
