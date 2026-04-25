@@ -28,6 +28,10 @@ export default function LoginPage() {
       toast.success('Welcome back!')
       router.push('/discover')
     } catch (err: any) {
+      if (err.response?.status === 403 && err.response?.data?.detail?.toLowerCase().includes('verify')) {
+        router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
+        return
+      }
       setError(err.response?.data?.detail || 'Invalid email or password')
     } finally {
       setLoading(false)

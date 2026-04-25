@@ -110,6 +110,20 @@ async def send_password_reset_email(to: str, name: str, token: str) -> None:
     await send_email(to, "Reset your Lovemaxxing password", _base_template(content))
 
 
+async def send_verification_code_email(to: str, name: str, code: str) -> None:
+    content = f"""
+    <h2 style="color:#4A1520;font-family:Georgia,serif;margin:0 0 8px;">Welcome, {name}!</h2>
+    <p style="color:#722F37;margin:0 0 24px;">Enter this code to verify your email and complete your account.</p>
+    <div style="text-align:center;margin:0 0 24px;">
+      <div style="display:inline-block;background:#FAF7F2;border:2px solid #C9A96E;border-radius:16px;padding:20px 40px;">
+        <span style="font-size:40px;font-weight:700;letter-spacing:12px;color:#4A1520;font-family:Georgia,serif;">{code}</span>
+      </div>
+    </div>
+    <p style="color:#8f1a3c;font-size:13px;text-align:center;">This code expires in 10 minutes. If you didn't sign up, ignore this email.</p>
+    """
+    await send_email(to, "Your Lovemaxxing verification code", _base_template(content))
+
+
 async def send_match_notification(to: str, name: str, match_name: str) -> None:
     content = f"""
     <h2 style="color:#4A1520;font-family:Georgia,serif;margin:0 0 8px;">It's a Match!</h2>

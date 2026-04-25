@@ -123,3 +123,17 @@ class BlockOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SignupPendingResponse(BaseModel):
+    message: str
+    email: str
+
+
+class VerifyCodeRequest(BaseModel):
+    email: EmailStr
+    code: str
+
+
+class ResendCodeRequest(BaseModel):
+    email: EmailStr

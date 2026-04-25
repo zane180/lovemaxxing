@@ -6,12 +6,10 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Heart, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 
 export default function SignupPage() {
   const router = useRouter()
-  const { setUser, setToken } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -31,11 +29,8 @@ export default function SignupPage() {
     }
     setLoading(true)
     try {
-      const res = await api.post('/auth/signup', form)
-      setUser(res.data.user)
-      setToken(res.data.token)
-      toast.success('Account created!')
-      router.push('/onboarding')
+      await api.post('/auth/signup', form)
+      router.push(`/verify-email?email=${encodeURIComponent(form.email)}`)
     } catch (err: any) {
       toast.error(err.response?.data?.detail || 'Something went wrong')
     } finally {
