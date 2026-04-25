@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [editingInterests, setEditingInterests] = useState(false)
   const [interests, setInterests] = useState<string[]>(user?.interests || [])
-  const [stats, setStats] = useState<{ matches: number; likes: number; avg_score: number } | null>(null)
+  const [stats, setStats] = useState(user?.stats ?? null)
 
   useEffect(() => {
     if (user?.interests) setInterests(user.interests)
@@ -26,7 +26,10 @@ export default function ProfilePage() {
   }, [user?.interests?.join(','), user?.bio])
 
   useEffect(() => {
-    api.get('/profiles/me/stats').then((res) => setStats(res.data)).catch(() => {})
+    api.get('/profiles/me/stats').then((res) => {
+      setStats(res.data)
+      if (user) setUser({ ...user, stats: res.data })
+    }).catch(() => {})
   }, [])
 
   const age = user?.birthdate
