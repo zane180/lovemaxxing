@@ -33,6 +33,7 @@ export interface Message {
   content: string
   sender_id: string
   created_at: string
+  read?: boolean
 }
 
 export interface Match {

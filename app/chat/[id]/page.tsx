@@ -27,10 +27,17 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectAttempts = useRef(0)
+  const matchIdRef = useRef<string | null>(null)
+  const isMounted = useRef(true)
 
   useEffect(() => {
+    isMounted.current = true
     loadChat()
     return () => {
+      isMounted.current = false
+      reconnectTimer.current && clearTimeout(reconnectTimer.current)
       wsRef.current?.close()
     }
   }, [id])
@@ -39,26 +46,57 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const markAsRead = useCallback(async (mId: string) => {
+    try { await api.post(`/chat/${mId}/read`) } catch {}
+  }, [])
+
   const connectWebSocket = useCallback((mId: string) => {
+    if (!isMounted.current) return
     const token = typeof window !== 'undefined' ? localStorage.getItem('lovemaxxing_token') : null
     if (!token) return
 
+    wsRef.current?.close()
     const ws = new WebSocket(`${WS_BASE}/chat/ws/${mId}?token=${token}`)
     wsRef.current = ws
 
+    ws.onopen = () => {
+      reconnectAttempts.current = 0
+    }
+
     ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data) as Message
-      setMessages((prev) => {
-        // Deduplicate — avoid adding if already exists (from optimistic update)
-        if (prev.some((m) => m.id === msg.id)) return prev
-        return [...prev, msg]
-      })
+      const data = JSON.parse(event.data)
+
+      if (data.type === 'read') {
+        // Other user read our messages — mark all our sent messages as read
+        setMessages((prev) =>
+          prev.map((m) => (m.sender_id === user?.id ? { ...m, read: true } : m))
+        )
+        return
+      }
+
+      if (data.type === 'message') {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === data.id)) return prev
+          return [...prev, data as Message]
+        })
+        // Auto-mark as read since the chat is open
+        markAsRead(mId)
+        return
+      }
+    }
+
+    ws.onclose = () => {
+      if (!isMounted.current) return
+      // Exponential backoff: 1s, 2s, 4s, 8s … capped at 30s
+      const delay = Math.min(1000 * 2 ** reconnectAttempts.current, 30000)
+      reconnectAttempts.current++
+      reconnectTimer.current = setTimeout(() => connectWebSocket(mId), delay)
     }
 
     ws.onerror = () => {
-      // Silently fall back to HTTP polling
+      ws.close()
     }
-  }, [])
+  }, [user?.id, markAsRead])
 
   const loadChat = async () => {
     try {
@@ -69,13 +107,13 @@ export default function ChatPage() {
       setProfile(profileRes.data)
       setMessages(msgRes.data.messages)
 
-      // Find match ID for WebSocket
       const matchesRes = await api.get('/matching/matches')
       const match = matchesRes.data.matches?.find(
         (m: any) => m.profile.id === id
       )
       if (match) {
         setMatchId(match.id)
+        matchIdRef.current = match.id
         connectWebSocket(match.id)
       }
     } catch {
@@ -97,15 +135,17 @@ export default function ChatPage() {
       content,
       sender_id: user?.id || 'me',
       created_at: new Date().toISOString(),
+      read: false,
     }
     setMessages((prev) => [...prev, optimistic])
 
     try {
       const targetId = matchId || id as string
       const res = await api.post(`/chat/${targetId}/messages`, { content })
+      // Replace optimistic with real message (WS broadcast also arrives; dedup handles it)
       setMessages((prev) => prev.map((m) => m.id === optimistic.id ? res.data : m))
     } catch {
-      // Keep optimistic message in demo mode
+      // Keep optimistic in demo mode
     } finally {
       setSending(false)
       inputRef.current?.focus()
@@ -119,9 +159,11 @@ export default function ChatPage() {
     }
   }
 
-  const handleBlocked = () => {
-    router.push('/matches')
-  }
+  // Index of the last message I sent that has been read — shows "Seen" under it
+  const lastSeenIndex = messages.reduce<number>((acc, m, i) => {
+    if (m.sender_id === user?.id && m.read) return i
+    return acc
+  }, -1)
 
   if (loading) {
     return (
@@ -165,7 +207,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-burgundy-900/10 rounded-full">
             <Heart className="w-4 h-4 text-burgundy-900 fill-burgundy-900" />
@@ -181,29 +223,46 @@ export default function ChatPage() {
         </div>
 
         <AnimatePresence initial={false}>
-          {messages.map((msg) => {
+          {messages.map((msg, i) => {
             const isMe = msg.sender_id === user?.id || msg.sender_id === 'me'
+            const showSeen = isMe && i === lastSeenIndex
+            const prevMsg = messages[i - 1]
+            const showTimestamp = !prevMsg ||
+              new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() > 5 * 60 * 1000
+
             return (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                initial={{ opacity: 0, y: 8, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                transition={{ duration: 0.18 }}
               >
-                <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                  <div
-                    className={`px-4 py-3 rounded-3xl text-sm leading-relaxed ${
-                      isMe
-                        ? 'bg-burgundy-900 text-cream-100 rounded-br-sm'
-                        : 'bg-white dark:bg-[#2A1218] text-burgundy-950 dark:text-cream-100 shadow-card dark:shadow-none rounded-bl-sm'
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                  <span className="text-xs text-burgundy-800/40 px-1">
+                {showTimestamp && (
+                  <p className="text-center text-xs text-burgundy-800/40 my-3">
                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                  </span>
+                  </p>
+                )}
+                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
+                  <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
+                    <div
+                      className={`px-4 py-2.5 rounded-3xl text-sm leading-relaxed ${
+                        isMe
+                          ? 'bg-burgundy-900 text-cream-100 rounded-br-sm'
+                          : 'bg-white dark:bg-[#2A1218] text-burgundy-950 dark:text-cream-100 shadow-card dark:shadow-none rounded-bl-sm'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                    {showSeen && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-xs text-burgundy-800/50 px-1"
+                      >
+                        Seen
+                      </motion.span>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )
@@ -234,13 +293,12 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Report/Block modal */}
       {showReport && profile && (
         <ReportModal
           userId={profile.id}
           userName={profile.name}
           onClose={() => setShowReport(false)}
-          onBlocked={handleBlocked}
+          onBlocked={() => router.push('/matches')}
         />
       )}
     </div>
