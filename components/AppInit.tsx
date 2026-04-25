@@ -6,6 +6,14 @@ import { api } from '@/lib/api'
 
 export default function AppInit() {
   const token = useAuthStore((s) => s.token)
+  const userId = useAuthStore((s) => s.user?.id)
+
+  // Re-apply dark mode whenever the logged-in user changes (login / logout / account switch)
+  useEffect(() => {
+    const key = userId ? `lm-dark-${userId}` : 'lm-dark'
+    const isDark = localStorage.getItem(key) === 'true'
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [userId])
 
   useEffect(() => {
     if (!token) return

@@ -25,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('lovemaxxing_token')
+          document.documentElement.classList.remove('dark')
         }
         set({ user: null, token: null })
       },

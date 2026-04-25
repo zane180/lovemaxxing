@@ -7,11 +7,12 @@ function darkKey(userId?: string | null) {
 
 export function useDarkMode() {
   const userId = useAuthStore((s) => s.user?.id)
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(() =>
+    typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+  )
 
   useEffect(() => {
-    const stored = localStorage.getItem(darkKey(userId))
-    const isDark = stored === 'true'
+    const isDark = localStorage.getItem(darkKey(userId)) === 'true'
     setDark(isDark)
     document.documentElement.classList.toggle('dark', isDark)
   }, [userId])
