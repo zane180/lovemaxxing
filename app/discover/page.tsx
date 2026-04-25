@@ -5,7 +5,6 @@ import { motion, useMotionValue, useTransform, animate, AnimatePresence } from '
 import { Heart, X, Star, Info, RotateCcw, MessageCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
-import NavBar from '@/components/NavBar'
 import { api } from '@/lib/api'
 import type { Profile } from '@/lib/types'
 
@@ -349,7 +348,6 @@ export default function DiscoverPage() {
         )}
       </AnimatePresence>
 
-      <NavBar active="discover" />
     </div>
   )
 }

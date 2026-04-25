@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import { Camera, Edit3, Settings, LogOut, Star, Heart, Sparkles, Check, X } from 'lucide-react'
-import NavBar from '@/components/NavBar'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -246,7 +245,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <NavBar active="profile" />
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MessageCircle, Search } from 'lucide-react'
 import Link from 'next/link'
-import NavBar from '@/components/NavBar'
 import { api } from '@/lib/api'
 import type { Match } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
@@ -170,7 +169,6 @@ export default function MatchesPage() {
         </div>
       )}
 
-      <NavBar active="matches" />
     </div>
   )
 }
