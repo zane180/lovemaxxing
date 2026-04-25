@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('lm-dark')==='true'){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem('lovemaxxing_user');var uid=s?JSON.parse(s)?.state?.user?.id:null;var key=uid?'lm-dark-'+uid:'lm-dark';if(localStorage.getItem(key)==='true'){document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
