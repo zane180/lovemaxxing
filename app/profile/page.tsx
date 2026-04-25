@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [editingInterests, setEditingInterests] = useState(false)
   const [interests, setInterests] = useState<string[]>(user?.interests || [])
-  const [stats, setStats] = useState(user?.stats ?? { matches: 0, likes: 0, avg_score: 0 })
+  const [stats, setStats] = useState<{ matches: number; likes: number; avg_score: number } | null>(null)
 
   useEffect(() => {
     if (user?.interests) setInterests(user.interests)
@@ -134,15 +134,19 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Matches', value: stats.matches, icon: Heart },
-            { label: 'Likes', value: stats.likes, icon: Star },
-            { label: 'Score', value: `${stats.avg_score}%`, icon: Sparkles },
+            { label: 'Matches', value: stats?.matches, icon: Heart },
+            { label: 'Likes', value: stats?.likes, icon: Star },
+            { label: 'Score', value: stats != null ? `${stats.avg_score}%` : undefined, icon: Sparkles },
           ].map((stat) => {
             const Icon = stat.icon
             return (
               <div key={stat.label} className="card text-center py-4">
                 <Icon className="w-5 h-5 text-burgundy-900 mx-auto mb-1" />
-                <p className="font-bold text-burgundy-950 text-lg">{stat.value}</p>
+                {stat.value != null ? (
+                  <p className="font-bold text-burgundy-950 dark:text-cream-100 text-lg">{stat.value}</p>
+                ) : (
+                  <div className="h-7 w-10 bg-burgundy-100 dark:bg-burgundy-900/30 rounded-md animate-pulse mx-auto mb-0.5" />
+                )}
                 <p className="text-xs text-burgundy-800/50">{stat.label}</p>
               </div>
             )
