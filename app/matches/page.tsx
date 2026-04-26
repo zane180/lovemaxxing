@@ -101,7 +101,7 @@ export default function MatchesPage() {
                       <p className="text-xs font-medium text-burgundy-950 w-20 truncate text-center">
                         {match.profile.name}
                       </p>
-                      {match.profile.match_score && (
+                      {match.profile.match_score != null && match.profile.match_score > 0 && (
                         <p className="text-xs text-gold-500 font-semibold">{match.profile.match_score}%</p>
                       )}
                     </Link>
