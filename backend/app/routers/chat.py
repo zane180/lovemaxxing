@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import Dict, List
 import json
@@ -11,6 +11,7 @@ from ..models import User, Match, Message, Block
 from ..schemas import MessageCreate, MessageOut
 from ..auth import get_current_user
 from ..config import settings
+from ..services.storage import upload_chat_media
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -56,6 +57,18 @@ def _get_match(match_id_or_user_id: str, current_user: User, db: Session) -> Mat
     return match
 
 
+def _serialize_message(m: Message) -> dict:
+    return {
+        "id": m.id,
+        "content": m.content,
+        "sender_id": m.sender_id,
+        "created_at": m.created_at,
+        "read": m.read,
+        "media_url": m.media_url,
+        "media_type": m.media_type,
+    }
+
+
 @router.get("/{match_id}/messages")
 async def get_messages(
     match_id: str,
@@ -71,7 +84,6 @@ async def get_messages(
     ).update({"read": True})
     db.commit()
 
-    # Broadcast read event so the sender sees "Seen" in real-time
     if updated:
         await manager.broadcast(match.id, {
             "type": "read",
@@ -82,16 +94,7 @@ async def get_messages(
         Message.match_id == match.id
     ).order_by(Message.created_at.asc()).all()
 
-    return {"messages": [
-        {
-            "id": m.id,
-            "content": m.content,
-            "sender_id": m.sender_id,
-            "created_at": m.created_at,
-            "read": m.read,
-        }
-        for m in msgs
-    ]}
+    return {"messages": [_serialize_message(m) for m in msgs]}
 
 
 @router.post("/{match_id}/read")
@@ -100,7 +103,6 @@ async def mark_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Mark all unread incoming messages as read and broadcast the event."""
     match = _get_match(match_id, current_user, db)
 
     updated = db.query(Message).filter(
@@ -119,6 +121,39 @@ async def mark_read(
     return {"marked": updated}
 
 
+@router.post("/{match_id}/media")
+async def upload_media(
+    match_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Upload an image or video for use in a chat message."""
+    match = _get_match(match_id, current_user, db)
+
+    content_type = file.content_type or ""
+    if content_type.startswith("image/"):
+        media_type = "image"
+        max_size = 10 * 1024 * 1024  # 10 MB
+    elif content_type.startswith("video/"):
+        media_type = "video"
+        max_size = 50 * 1024 * 1024  # 50 MB
+    else:
+        raise HTTPException(status_code=400, detail="Only images and videos are supported")
+
+    contents = await file.read()
+    if len(contents) > max_size:
+        limit = "10 MB" if media_type == "image" else "50 MB"
+        raise HTTPException(status_code=400, detail=f"File too large (max {limit})")
+
+    try:
+        url = await upload_chat_media(contents, media_type, file.filename or "")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Upload failed")
+
+    return {"url": url, "media_type": media_type}
+
+
 @router.post("/{match_id}/messages", response_model=MessageOut)
 async def send_message(
     match_id: str,
@@ -126,7 +161,7 @@ async def send_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if not body.content.strip():
+    if not body.content.strip() and not body.media_url:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
     match = _get_match(match_id, current_user, db)
@@ -143,19 +178,17 @@ async def send_message(
         match_id=match.id,
         sender_id=current_user.id,
         content=body.content.strip(),
+        media_url=body.media_url,
+        media_type=body.media_type,
     )
     db.add(msg)
     db.commit()
     db.refresh(msg)
 
-    # Broadcast to both users so the recipient sees it instantly
     await manager.broadcast(match.id, {
         "type": "message",
-        "id": msg.id,
-        "content": msg.content,
-        "sender_id": msg.sender_id,
+        **_serialize_message(msg),
         "created_at": msg.created_at.isoformat(),
-        "read": False,
     })
 
     return msg
@@ -190,8 +223,6 @@ async def websocket_endpoint(ws: WebSocket, match_id: str, token: str = Query(..
     try:
         while True:
             await ws.receive_text()
-            # Messages are sent via REST POST; WS is receive-only for clients.
-            # Keeping the loop alive so the connection persists for broadcasts.
     except WebSocketDisconnect:
         manager.disconnect(match_id, ws)
     except Exception as e:

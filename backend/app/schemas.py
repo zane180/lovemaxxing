@@ -82,7 +82,9 @@ class SwipeResponse(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    content: str
+    content: str = ""
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None  # 'image', 'video', 'gif'
 
 
 class MessageOut(BaseModel):
@@ -90,6 +92,9 @@ class MessageOut(BaseModel):
     content: str
     sender_id: str
     created_at: datetime
+    read: bool = False
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
 
     class Config:
         from_attributes = True

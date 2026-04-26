@@ -94,8 +94,10 @@ class Message(Base):
     id = Column(String, primary_key=True, default=gen_uuid)
     match_id = Column(String, ForeignKey("matches.id"), nullable=False)
     sender_id = Column(String, ForeignKey("users.id"), nullable=False)
-    content = Column(Text, nullable=False)
+    content = Column(Text, nullable=False, default="")
     read = Column(Boolean, default=False)
+    media_url = Column(Text, nullable=True)
+    media_type = Column(String(20), nullable=True)  # 'image', 'video', 'gif'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     match = relationship("Match", back_populates="messages")

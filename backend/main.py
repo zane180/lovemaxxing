@@ -7,11 +7,28 @@ from slowapi.errors import RateLimitExceeded
 import uvicorn
 import os
 
+from sqlalchemy import text
 from app.database import engine, Base
 from app.routers import auth, profiles, matching, chat
 from app.routers.safety import router as safety_router
 from app.routers.admin import router as admin_router
 
+
+def run_migrations():
+    """Add new columns to existing tables without Alembic."""
+    with engine.connect() as conn:
+        for stmt in [
+            "ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_url TEXT",
+            "ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_type VARCHAR(20)",
+        ]:
+            try:
+                conn.execute(text(stmt))
+                conn.commit()
+            except Exception:
+                conn.rollback()
+
+
+run_migrations()
 # Create tables
 Base.metadata.create_all(bind=engine)
 

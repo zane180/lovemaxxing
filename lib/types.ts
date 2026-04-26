@@ -34,6 +34,8 @@ export interface Message {
   sender_id: string
   created_at: string
   read?: boolean
+  media_url?: string
+  media_type?: 'image' | 'video' | 'gif'
 }
 
 export interface Match {
