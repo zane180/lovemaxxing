@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Search } from 'lucide-react'
 
-const GIPHY_KEY = process.env.NEXT_PUBLIC_GIPHY_API_KEY || 'dc6zaTOxFJmzC'
+const TENOR_KEY = process.env.NEXT_PUBLIC_TENOR_API_KEY || 'LIVDSRZULELA'
 
 interface GifItem {
   id: string
@@ -27,17 +27,17 @@ export default function GifPicker({ onSelect, onClose }: Props) {
     setLoading(true)
     try {
       const endpoint = q
-        ? `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=24&rating=g`
-        : `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=24&rating=g`
+        ? `https://api.tenor.com/v1/search?key=${TENOR_KEY}&q=${encodeURIComponent(q)}&limit=24&contentfilter=medium`
+        : `https://api.tenor.com/v1/trending?key=${TENOR_KEY}&limit=24&contentfilter=medium`
       const res = await fetch(endpoint)
       const data = await res.json()
       setGifs(
-        (data.data || []).map((g: any) => ({
+        (data.results || []).map((g: any) => ({
           id: g.id,
-          url: g.images.original.url,
-          preview: g.images.fixed_height_small.url,
-          title: g.title,
-        }))
+          url: g.media?.[0]?.gif?.url || '',
+          preview: g.media?.[0]?.tinygif?.url || g.media?.[0]?.gif?.url || '',
+          title: g.title || '',
+        })).filter((g: GifItem) => g.url)
       )
     } catch {
       setGifs([])
@@ -82,7 +82,7 @@ export default function GifPicker({ onSelect, onClose }: Props) {
               className="w-full pl-9 pr-4 py-2.5 bg-cream-100 dark:bg-[#120608] rounded-full text-sm outline-none text-burgundy-950 dark:text-cream-100 placeholder:text-burgundy-800/40"
             />
           </div>
-          <span className="text-[10px] text-burgundy-800/25 flex-shrink-0">Powered by GIPHY</span>
+          <span className="text-[10px] text-burgundy-800/25 flex-shrink-0">Powered by Tenor</span>
         </div>
 
         {/* Grid */}
