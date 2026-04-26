@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Sparkles, Brain, Shield, ChevronRight, Star } from 'lucide-react'
+import SplashScreen from '@/components/SplashScreen'
 
 const FEATURES = [
   {
@@ -61,6 +62,12 @@ const stagger = {
 
 export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0)
+  const [showSplash, setShowSplash] = useState(true)
+
+  useEffect(() => {
+    // Only show once per browser session
+    if (sessionStorage.getItem('lm-splash-seen')) setShowSplash(false)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -69,6 +76,18 @@ export default function LandingPage() {
   }, [])
 
   return (
+    <>
+    <AnimatePresence>
+      {showSplash && (
+        <SplashScreen
+          key="splash"
+          onComplete={() => {
+            sessionStorage.setItem('lm-splash-seen', '1')
+            setShowSplash(false)
+          }}
+        />
+      )}
+    </AnimatePresence>
     <div className="min-h-screen bg-cream-100 overflow-x-hidden">
       {/* Nav */}
       <nav
@@ -345,5 +364,6 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+    </>
   )
 }
