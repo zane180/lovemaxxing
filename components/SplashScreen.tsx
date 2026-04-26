@@ -6,56 +6,70 @@ import { motion, AnimatePresence, useMotionValue, useTransform, animate } from '
 interface Props { onComplete: () => void }
 
 const WRITE_S   = 4.2
-const ARROW_LEN = 155
+const ARROW_LEN = 160
+// The quill SVG is 70px wide; the nib is at horizontal center (x=35).
+// penX must offset by -35 so the nib lands exactly at the clip reveal edge.
+const NIB_X     = 35
 
 const T = {
-  startWrite:  900,
-  morphStart:  5500,
-  arrowLaunch: 7000,
-  arrowHit:    8850,
-  burstStart:  9250,
-  done:        11200,
+  startWrite:  600,
+  morphStart:  4900,
+  arrowLaunch: 6400,   // ~1.5 s of heartbeat visible before arrow
+  arrowHit:    8500,   // 2.1 s elegant flight
+  burstStart:  8950,
+  done:        10900,
 }
 
-/* ── SVG pieces ──────────────────────────────────────────────── */
+/* ── SVG components ──────────────────────────────────────────── */
 
 function QuillPen() {
+  // Parametric barb lengths: vane widens to peak around t=0.38 then tapers
+  const yPositions = [12,20,29,38,48,58,68,80,92,106,120,135,150,166,180]
+  const barbs = yPositions.map((y, i) => {
+    const t = i / (yPositions.length - 1)
+    const bell = t < 0.38 ? t / 0.38 : 1 - (t - 0.38) / 0.62
+    const rReach = 4 + bell * 28        // right vane: up to 32px
+    const lReach = 3 + bell * 20        // left vane: up to 23px (inner, narrower)
+    const op = 0.72 - i * 0.022
+    const sw = i < 5 ? 0.54 : 0.4
+    return { y, rReach, lReach, op, sw }
+  })
+
   return (
-    <svg width="52" height="136" viewBox="0 0 52 136" fill="none">
-      {[[-24,7,-33,18],[-18,8,-24,21],[-13,9,-17,22],[-7,9,-10,23],[-3,10,-4,23],
-        [3,10,4,23],[7,9,10,23],[13,9,17,22],[18,8,24,21],[24,7,33,18]]
-        .map(([cx,cy,ex,ey],i)=>(
-          <path key={`tp${i}`} d={`M26 4 Q${26+cx} ${cy} ${26+ex} ${ey}`}
-            stroke="rgba(255,252,245,0.54)" strokeWidth="0.55" fill="none"/>
-        ))}
-      {[[-33,14,-40,28],[-22,15,-28,29],[-11,16,-14,30],[11,16,14,30],[22,15,28,29],[33,14,40,28]]
-        .map(([cx,cy,ex,ey],i)=>(
-          <path key={`tt${i}`} d={`M26 4 Q${26+cx} ${cy} ${26+ex} ${ey}`}
-            stroke="rgba(255,248,238,0.34)" strokeWidth="0.44" fill="none"/>
-        ))}
-      <path d="M26 3 C26.5 38 26 78 25 122" stroke="#C4A882" strokeWidth="1.5" fill="none" opacity="0.9"/>
-      {[8,14,20,27,34,41,48,56,63,70,77,83].map((y,i)=>{
-        const sp=Math.max(5,21-i*1.4), op=i<4?0.72:i<8?0.55:0.38, sw=Math.max(0.35,0.86-i*0.04)
-        return (
-          <g key={`bar${i}`}>
-            <path d={`M26 ${y} Q${26-sp*0.55} ${y+4} ${26-sp} ${y+6}`} stroke={`rgba(255,250,242,${op})`} strokeWidth={sw} fill="none"/>
-            <path d={`M26 ${y} Q${26+sp*0.55} ${y+4} ${26+sp} ${y+6}`} stroke={`rgba(255,250,242,${op})`} strokeWidth={sw} fill="none"/>
-          </g>
-        )
-      })}
-      {[10,24,38,52].map((y,r)=>(
-        <g key={`bu${r}`}>
-          <path d={`M23 ${y} Q18 ${y+3} 15 ${y+6}`}   stroke="rgba(255,252,246,0.26)" strokeWidth="0.38" fill="none"/>
-          <path d={`M29 ${y} Q34 ${y+3} 37 ${y+6}`}   stroke="rgba(255,252,246,0.26)" strokeWidth="0.38" fill="none"/>
-          <path d={`M22 ${y+5} Q16 ${y+8} 13 ${y+10}`} stroke="rgba(255,252,246,0.16)" strokeWidth="0.32" fill="none"/>
-          <path d={`M30 ${y+5} Q36 ${y+8} 39 ${y+10}`} stroke="rgba(255,252,246,0.16)" strokeWidth="0.32" fill="none"/>
+    <svg width="70" height="210" viewBox="0 0 70 210" fill="none">
+      {/* Right (outer) vane — sweeping shape */}
+      <path d="M35 8 C42 26 66 56 66 94 C66 126 56 160 44 194 L35 210 Z"
+        fill="rgba(255,253,248,0.82)" />
+      {/* Left (inner) vane — narrower */}
+      <path d="M35 8 C28 24 10 50 8 86 C6 116 16 152 26 192 L35 210 Z"
+        fill="rgba(249,244,234,0.70)" />
+      {/* Vane sheen */}
+      <path d="M35 8 C42 26 66 56 66 94 C66 126 56 160 44 194"
+        stroke="rgba(255,255,255,0.35)" strokeWidth="0.9" fill="none" />
+      {/* Barbs */}
+      {barbs.map(({ y, rReach, lReach, op, sw }) => (
+        <g key={y}>
+          <path d={`M35 ${y} Q${35 + rReach * 0.58} ${y+3} ${35+rReach} ${y+5}`}
+            stroke={`rgba(255,252,245,${op})`} strokeWidth={sw} fill="none"/>
+          <path d={`M35 ${y+2} Q${35 + rReach * 0.45} ${y+5} ${35 + rReach * 0.82} ${y+7}`}
+            stroke={`rgba(255,252,245,${op*0.5})`} strokeWidth={sw*0.65} fill="none"/>
+          <path d={`M35 ${y} Q${35 - lReach * 0.55} ${y+3} ${35-lReach} ${y+5}`}
+            stroke={`rgba(255,252,245,${op*0.85})`} strokeWidth={sw*0.88} fill="none"/>
         </g>
       ))}
-      <path d="M24.5 81 C24 96 23.5 109 23 123" stroke="#C9A84C" strokeWidth="2.6" fill="none" strokeLinecap="round"/>
-      <path d="M27.5 81 C28 96 28.5 109 29 123" stroke="#A87E28" strokeWidth="1.7" fill="none" strokeLinecap="round"/>
-      <path d="M25.5 83 C25.5 97 25.5 111 25.5 121" stroke="rgba(255,225,120,0.36)" strokeWidth="0.9" fill="none"/>
-      <path d="M22.5 120 L20 133 L26 128 L26 136 L26 128 L32 133 L29.5 120 Z" fill="#C9A84C"/>
-      <path d="M25.5 125 L26 136 L26.5 125" stroke="#7A5010" strokeWidth="0.75" fill="none"/>
+      {/* Central rachis */}
+      <path d="M35 7 C35.4 85 35.2 150 35 205"
+        stroke="#C5A585" strokeWidth="1.25" fill="none" opacity="0.88" />
+      {/* Calamus (shaft below vane, gold) */}
+      <path d="M33.5 178 C33 189 32.5 199 32 207"
+        stroke="#C9A84C" strokeWidth="2.3" fill="none" strokeLinecap="round"/>
+      <path d="M36.5 178 C37 189 37.5 199 38 207"
+        stroke="#A87E28" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M35 180 C35 191 35 201 35 206"
+        stroke="rgba(255,220,110,0.28)" strokeWidth="0.8" fill="none"/>
+      {/* Nib tip at bottom center (35, 210) */}
+      <path d="M33 206 L31 210 L35 208 L39 210 L37 206 Z" fill="#C9A84C"/>
+      <path d="M34.5 207 L35 210 L35.5 207" stroke="#7A5010" strokeWidth="0.65" fill="none"/>
     </svg>
   )
 }
@@ -67,18 +81,26 @@ function HeartPath() {
 function GoldenArrow() {
   const L = ARROW_LEN
   return (
-    <svg width={L} height="26" viewBox={`0 0 ${L} 26`} fill="none">
-      <path d={`M0 13 L13 5`}  stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round"/>
-      <path d={`M0 13 L13 13`} stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round"/>
-      <path d={`M0 13 L13 21`} stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round"/>
-      <path d={`M4 13 L11 8`}  stroke="rgba(255,228,110,0.5)" strokeWidth="0.9" strokeLinecap="round"/>
-      <path d={`M4 13 L11 18`} stroke="rgba(255,228,110,0.5)" strokeWidth="0.9" strokeLinecap="round"/>
-      <line x1="13" y1="13" x2={L-17} y2="13" stroke="#C9A84C" strokeWidth="2.4" strokeLinecap="round"/>
-      <line x1="13" y1="11.8" x2={L-17} y2="11.8" stroke="rgba(255,235,140,0.6)" strokeWidth="0.8" strokeLinecap="round"/>
-      <line x1="13" y1="14.2" x2={L-17} y2="14.2" stroke="rgba(160,110,10,0.36)" strokeWidth="0.7" strokeLinecap="round"/>
-      <path d={`M${L-17} 13 L${L-6} 5 L${L} 13 L${L-6} 21 Z`} fill="#C9A84C"/>
-      <path d={`M${L-17} 13 L${L-6} 5 L${L-3} 10 Z`} fill="rgba(255,235,140,0.5)"/>
-      <path d={`M${L-17} 13 L${L-6} 5 L${L} 13 L${L-6} 21 Z`} stroke="rgba(160,110,10,0.5)" strokeWidth="0.5" fill="none"/>
+    <svg width={L} height="30" viewBox={`0 0 ${L} 30`} fill="none">
+      {/* Upper flight feather — organic leaf curve */}
+      <path d="M10 14 C7 11 3 8 1 4 C-1 0 4 -1 7 2 C10 5 9 9 10 12 C11 13 12 13 13 13 L10 14"
+        fill="#C9A84C"/>
+      <path d="M4 8 Q6 6 9 5" stroke="rgba(255,240,160,0.7)" strokeWidth="0.8" fill="none"/>
+      <path d="M3 11 Q5 10 7 10" stroke="rgba(255,240,160,0.5)" strokeWidth="0.6" fill="none"/>
+      {/* Lower flight feather */}
+      <path d="M10 16 C7 19 3 22 1 26 C-1 30 4 31 7 28 C10 25 9 21 10 18 C11 17 12 17 13 17 L10 16"
+        fill="#B8923A"/>
+      <path d="M4 22 Q6 24 9 25" stroke="rgba(255,240,160,0.55)" strokeWidth="0.8" fill="none"/>
+      <path d="M3 19 Q5 20 7 20" stroke="rgba(255,240,160,0.4)" strokeWidth="0.6" fill="none"/>
+      {/* Shaft */}
+      <line x1="13" y1="15" x2={L-18} y2="15" stroke="#C9A84C" strokeWidth="2.6" strokeLinecap="round"/>
+      <line x1="13" y1="13.5" x2={L-18} y2="13.5" stroke="rgba(255,240,150,0.65)" strokeWidth="0.9" strokeLinecap="round"/>
+      <line x1="13" y1="16.5" x2={L-18} y2="16.5" stroke="rgba(140,90,5,0.35)" strokeWidth="0.7" strokeLinecap="round"/>
+      {/* Arrowhead */}
+      <path d={`M${L-18} 15 L${L-6} 6 L${L} 15 L${L-6} 24 Z`} fill="#C9A84C"/>
+      <path d={`M${L-18} 15 L${L-6} 6 L${L-3} 11 Z`} fill="rgba(255,240,150,0.55)"/>
+      <path d={`M${L-18} 15 L${L-6} 6 L${L} 15 L${L-6} 24 Z`}
+        stroke="rgba(150,100,5,0.45)" strokeWidth="0.5" fill="none"/>
     </svg>
   )
 }
@@ -94,7 +116,9 @@ export default function SplashScreen({ onComplete }: Props) {
   const [aPos,  setAPos]    = useState({ x: 0, y: 0 })
 
   const writeProgress = useMotionValue(0)
-  const penX = useTransform(writeProgress, [0, 1], [0, wrapW])
+
+  // penX: offset by -NIB_X so the nib tip aligns with the clip reveal edge
+  const penX = useTransform(writeProgress, [0, 1], [-NIB_X, wrapW - NIB_X])
   const penY = useTransform(
     writeProgress,
     [0,   0.02, 0.07, 0.12, 0.17, 0.22, 0.27, 0.31, 0.36, 0.40, 0.46, 0.52, 0.57, 0.62, 0.67, 0.72, 0.78, 0.84, 0.91, 0.96, 1.0],
@@ -136,41 +160,28 @@ export default function SplashScreen({ onComplete }: Props) {
   const hit      = ['hit','burst'].includes(phase)
   const bursting = phase === 'burst'
 
-  /* ── Arrow geometry: straight shot from bottom-left to the "a" ── */
+  /* ── Arrow geometry ── */
   const arrow = useMemo(() => {
     if (!aPos.x) return null
     const sH = window.innerHeight
-
-    // The tail of the arrow starts at bottom-left, well off-screen
-    const tailStartX = -ARROW_LEN - 80   // off-screen left
-    const tailStartY = sH + 90           // off-screen below
-
-    // Angle: from the starting tail screen-position straight to aPos
-    const angleRad = Math.atan2(aPos.y - tailStartY, aPos.x - tailStartX)
-    const angleDeg = angleRad * (180 / Math.PI)
-
-    // Element positions (transformOrigin is '0 13px' = left-centre = tail)
-    // So element x,y are the tail's screen coords (y offset by -13 for top vs center)
-    const initX = tailStartX
-    const initY = tailStartY - 13
-
-    // Final: tip (at x=ARROW_LEN in local space after rotation) lands on aPos
-    const finalX = aPos.x - ARROW_LEN * Math.cos(angleRad)
-    const finalY = aPos.y - 13 - ARROW_LEN * Math.sin(angleRad)
-
-    // Overshoot for the "quiver" after impact
-    const overshootX = finalX + Math.cos(angleRad) * 28
-    const overshootY = finalY + Math.sin(angleRad) * 28
-
+    const tailStartX = -ARROW_LEN - 80
+    const tailStartY = sH + 90
+    const angleRad   = Math.atan2(aPos.y - tailStartY, aPos.x - tailStartX)
+    const angleDeg   = angleRad * (180 / Math.PI)
+    const initX      = tailStartX
+    const initY      = tailStartY - 15
+    const finalX     = aPos.x - ARROW_LEN * Math.cos(angleRad)
+    const finalY     = aPos.y - 15 - ARROW_LEN * Math.sin(angleRad)
+    const overshootX = finalX + Math.cos(angleRad) * 22
+    const overshootY = finalY + Math.sin(angleRad) * 22
     return { initX, initY, finalX, finalY, overshootX, overshootY, angleDeg, angleRad }
   }, [aPos])
 
-  /* ── Burst hearts: computed from real screen dims when burst starts ── */
+  /* ── Burst hearts ── */
   const burstHearts = useMemo(() => {
     if (!bursting) return []
-    const cx = window.innerWidth  / 2
-    const cy = window.innerHeight / 2
-    // Half-diagonal + 25% so hearts reach every corner
+    const cx  = window.innerWidth  / 2
+    const cy  = window.innerHeight / 2
     const maxD = Math.sqrt(cx * cx + cy * cy) * 1.25
     return Array.from({ length: 60 }).map((_, i) => ({
       angle:    (i / 60) * Math.PI * 2 + ((i * 17) % 7) * 0.06,
@@ -207,21 +218,40 @@ export default function SplashScreen({ onComplete }: Props) {
         <AnimatePresence>
           {writing && !morphed && wrapW > 0 && (
             <motion.div key="quill" className="absolute pointer-events-none"
-              style={{ bottom:0, left:0, x:penX, y:penY, rotate:-30, transformOrigin:'bottom center' }}
-              initial={{ opacity:0, scale:0.88 }}
+              style={{ bottom:0, left:0, x:penX, y:penY, rotate:-28, transformOrigin:'bottom center' }}
+              initial={{ opacity:0, scale:0.9 }}
               animate={{ opacity:1, scale:1 }}
-              exit={{ opacity:0, y:-50, scale:0.8, transition:{ duration:0.9, ease:'easeInOut' } }}
-              transition={{ opacity:{ duration:0.35 }, scale:{ duration:0.35 } }}
+              exit={{ opacity:0, y:-60, scale:0.75, transition:{ duration:1.0, ease:'easeInOut' } }}
+              transition={{ opacity:{ duration:0.4 }, scale:{ duration:0.4 } }}
             >
               <QuillPen />
+              {/* Ink glow at nib tip — shows where ink is being deposited */}
+              <motion.div
+                className="absolute pointer-events-none"
+                style={{
+                  bottom: 0, left: '50%',
+                  width: 10, height: 5,
+                  background: 'rgba(55,15,20,0.55)',
+                  borderRadius: '50%',
+                  filter: 'blur(1.5px)',
+                  transform: 'translateX(-50%)',
+                }}
+                animate={{ opacity: [0.4, 0.9, 0.4], scale: [0.8, 1.2, 0.8] }}
+                transition={{ duration: 0.7, repeat: Infinity, ease: 'easeInOut' }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
 
         <div ref={wrapRef}>
           <motion.div className="select-none flex items-baseline"
-            style={{ fontFamily:"'Dancing Script',cursive", fontWeight:700,
-              fontSize:'clamp(54px,12vw,96px)', color:'#722F37', lineHeight:1.25 }}
+            style={{
+              fontFamily: "'Great Vibes', cursive",
+              fontWeight: 400,
+              fontSize: 'clamp(58px,13vw,100px)',
+              color: '#722F37',
+              lineHeight: 1.3,
+            }}
             initial={{ clipPath:'inset(0 100% 0 0)' }}
             animate={writing ? { clipPath:'inset(0 0% 0 0)' } : {}}
             transition={{ duration:WRITE_S, ease:[0.25,0.08,0.6,1] }}
@@ -231,18 +261,35 @@ export default function SplashScreen({ onComplete }: Props) {
             {/* "a" → heart */}
             <span className="relative inline-flex items-center justify-center" ref={aRef}>
               <motion.span className="inline-block"
-                animate={morphed ? { opacity:0, scale:0.15, filter:'blur(6px)' }
+                animate={morphed ? { opacity:0, scale:0.12, filter:'blur(7px)' }
                                  : { opacity:1, scale:1,    filter:'blur(0px)' }}
-                transition={{ duration:0.75, ease:'easeIn' }}>a</motion.span>
+                transition={{ duration:0.72, ease:'easeIn' }}>a</motion.span>
 
               <motion.span className="absolute inset-0 flex items-center justify-center"
-                initial={{ opacity:0, scale:0, rotate:-20 }}
+                initial={{ opacity:0, scale:0, rotate:-18 }}
                 animate={morphed ? { opacity:1, scale:1, rotate:0 } : {}}
-                transition={{ duration:0.8, ease:[0.34,1.4,0.64,1] }}>
-                <svg viewBox="0 0 40 37" fill="#722F37"
-                  style={{ width:'0.6em', height:'0.55em', display:'inline-block', overflow:'visible' }}>
-                  <HeartPath />
-                </svg>
+                transition={{ duration:0.85, ease:[0.34,1.4,0.64,1] }}>
+                {/* Heart beats while alive, waiting for the arrow */}
+                <motion.span
+                  animate={morphed && !hit
+                    ? {
+                        scale: [1, 1.2, 1, 1.14, 1],
+                        filter: [
+                          'drop-shadow(0 0 0px transparent)',
+                          'drop-shadow(0 0 9px rgba(114,47,55,0.55))',
+                          'drop-shadow(0 0 0px transparent)',
+                          'drop-shadow(0 0 6px rgba(114,47,55,0.38))',
+                          'drop-shadow(0 0 0px transparent)',
+                        ],
+                      }
+                    : {}}
+                  transition={{ duration:1.3, repeat:Infinity, ease:'easeInOut' }}
+                >
+                  <svg viewBox="0 0 40 37" fill="#722F37"
+                    style={{ width:'0.62em', height:'0.57em', display:'inline-block', overflow:'visible' }}>
+                    <HeartPath />
+                  </svg>
+                </motion.span>
               </motion.span>
             </span>
 
@@ -251,15 +298,14 @@ export default function SplashScreen({ onComplete }: Props) {
         </div>
       </div>
 
-      {/* ── Golden arrow: straight shot, fixed rotation, clean trajectory ── */}
+      {/* ── Golden arrow ── */}
       <AnimatePresence>
         {arrowing && arrow && (
           <motion.div key="arrow" className="fixed pointer-events-none"
             style={{
               left: 0, top: 0, zIndex: 201,
-              // Rotation is fixed for the whole flight — arrow always points at the heart
               rotate: arrow.angleDeg,
-              transformOrigin: '0px 13px',  // tail-centre is the pivot
+              transformOrigin: '0px 15px',
             }}
             initial={{ x: arrow.initX, y: arrow.initY, opacity: 1 }}
             animate={hit
@@ -267,11 +313,8 @@ export default function SplashScreen({ onComplete }: Props) {
               : { x: arrow.finalX,     y: arrow.finalY }
             }
             transition={hit
-              ? { duration: 0.2, ease: 'easeIn' }
-              : {
-                  duration: (T.arrowHit - T.arrowLaunch) / 1000,
-                  ease: [0.3, 0, 0.65, 1],  // ease-in: slow deliberate start, accelerates
-                }
+              ? { duration: 0.18, ease: 'easeIn' }
+              : { duration: (T.arrowHit - T.arrowLaunch) / 1000, ease: [0.45, 0, 0.55, 1] }
             }
           >
             <GoldenArrow />
@@ -279,11 +322,23 @@ export default function SplashScreen({ onComplete }: Props) {
         )}
       </AnimatePresence>
 
+      {/* ── Gold flash on impact ── */}
+      <AnimatePresence>
+        {hit && (
+          <motion.div key="flash" className="fixed inset-0 pointer-events-none"
+            style={{ zIndex:203,
+              background:'radial-gradient(ellipse 60% 40% at 50% 42%, rgba(255,235,140,0.75) 0%, transparent 70%)' }}
+            initial={{ opacity:0 }}
+            animate={{ opacity:[0, 1, 0] }}
+            transition={{ duration:0.55, times:[0, 0.15, 1], ease:'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Cupid-heart impact ── */}
       <AnimatePresence>
         {hit && aPos.x > 0 && (
           <motion.div key="impact" className="fixed inset-0 pointer-events-none" style={{ zIndex:202 }}>
-            {/* Heart blooms */}
             <motion.div className="fixed" style={{ top:aPos.y, left:aPos.x }}>
               <motion.div style={{ x:'-50%', y:'-50%' }}
                 initial={{ scale:1, opacity:1 }}
@@ -293,8 +348,7 @@ export default function SplashScreen({ onComplete }: Props) {
               </motion.div>
             </motion.div>
 
-            {/* Gold ripple rings */}
-            {[0,1,2].map(i=>(
+            {[0,1,2].map(i => (
               <motion.div key={`r${i}`} className="fixed rounded-full"
                 style={{ border:`${i===0?2.5:1.8}px solid rgba(201,168,76,${i===0?0.85:0.55})`,
                   top:aPos.y, left:aPos.x, x:'-50%', y:'-50%' }}
@@ -304,17 +358,16 @@ export default function SplashScreen({ onComplete }: Props) {
               />
             ))}
 
-            {/* Mini hearts scatter */}
-            {Array.from({length:16}).map((_,i)=>{
-              const a=(i/16)*Math.PI*2, d=40+((i*53)%5)*30, sz=8+((i*31)%4)*7
-              const col=['#722F37','#C9A84C','#E8A0A8','#FFD700'][i%4]
+            {Array.from({ length:16 }).map((_,i) => {
+              const a = (i/16)*Math.PI*2, d = 40+((i*53)%5)*30, sz = 8+((i*31)%4)*7
+              const col = ['#722F37','#C9A84C','#E8A0A8','#FFD700'][i%4]
               return (
-                <motion.div key={`mh${i}`} className="fixed" style={{top:aPos.y,left:aPos.x}}>
+                <motion.div key={`mh${i}`} className="fixed" style={{ top:aPos.y, left:aPos.x }}>
                   <motion.div
                     initial={{ x:0, y:0, opacity:1, scale:0, rotate:0 }}
                     animate={{ x:Math.cos(a)*d, y:Math.sin(a)*d, opacity:0, scale:1.4, rotate:((i%2)*2-1)*220 }}
                     transition={{ duration:0.75, ease:'easeOut', delay:0.06 }}>
-                    <svg viewBox="0 0 40 37" fill={col} style={{width:sz,height:sz}}><HeartPath/></svg>
+                    <svg viewBox="0 0 40 37" fill={col} style={{ width:sz, height:sz }}><HeartPath/></svg>
                   </motion.div>
                 </motion.div>
               )
@@ -323,7 +376,7 @@ export default function SplashScreen({ onComplete }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ── Heart burst: 60 hearts fill the entire screen ── */}
+      {/* ── Heart burst — 60 hearts fill entire screen ── */}
       <AnimatePresence>
         {bursting && burstHearts.length > 0 && (
           <motion.div key="burst" className="fixed inset-0 pointer-events-none" style={{ zIndex:210 }}>
