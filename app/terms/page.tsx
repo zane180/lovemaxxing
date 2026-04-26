@@ -15,7 +15,7 @@ export default function TermsPage() {
             <Heart className="w-5 h-5 text-burgundy-900 fill-burgundy-900" />
             <span className="font-serif text-xl font-bold text-burgundy-950">Lovemaxxing</span>
           </Link>
-          <Link href="/discover" className="text-sm text-burgundy-900 hover:underline">Back to App</Link>
+          <Link href="/" className="text-sm text-burgundy-900 hover:underline">Back to App</Link>
         </div>
       </nav>
 
