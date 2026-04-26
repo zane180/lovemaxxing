@@ -3,6 +3,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import AppNavBar from '@/components/AppNavBar'
 import AppInit from '@/components/AppInit'
+import BackgroundOrbs from '@/components/BackgroundOrbs'
 
 export const metadata: Metadata = {
   title: 'Lovemaxxing — Find Your Perfect Match',
@@ -42,9 +43,12 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-cream-100 text-burgundy-950 antialiased">
+      <body className="text-burgundy-950 antialiased">
+        <BackgroundOrbs />
         <AppInit />
-        {children}
+        <div className="relative z-10">
+          {children}
+        </div>
         <AppNavBar />
         <Toaster
           position="top-center"

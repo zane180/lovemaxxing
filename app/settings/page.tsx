@@ -10,6 +10,7 @@ import NavBar from '@/components/NavBar'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { useDarkMode } from '@/lib/useDarkMode'
+import PageWrapper from '@/components/PageWrapper'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -109,9 +110,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
+    <PageWrapper slide>
+    <div className="min-h-screen pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-cream-100/90 dark:bg-[#120608]/90 backdrop-blur-sm border-b border-cream-300 dark:border-[#3D1E24] px-6 pt-6 pb-4 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-white/60 dark:bg-[#120608]/80 backdrop-blur-2xl border-b border-white/50 dark:border-[#3D1E24]/60 px-6 pt-6 pb-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -342,5 +344,6 @@ export default function SettingsPage() {
 
       <NavBar active="profile" />
     </div>
+    </PageWrapper>
   )
 }

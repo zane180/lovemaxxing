@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { api } from '@/lib/api'
 import type { Match } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
+import PageWrapper from '@/components/PageWrapper'
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([])
@@ -36,9 +37,10 @@ export default function MatchesPage() {
   const conversations = filtered.filter((m) => m.last_message)
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
+    <PageWrapper>
+    <div className="min-h-screen pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-cream-100/90 dark:bg-[#120608]/90 backdrop-blur-sm border-b border-cream-300 dark:border-[#3D1E24] px-6 pt-safe-top pt-6 pb-4">
+      <div className="sticky top-0 z-10 bg-white/60 dark:bg-[#120608]/80 backdrop-blur-2xl border-b border-white/50 dark:border-[#3D1E24]/60 px-6 pt-safe-top pt-6 pb-4">
         <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100 mb-4">Matches</h1>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-burgundy-800/40" />
@@ -125,7 +127,7 @@ export default function MatchesPage() {
                   >
                     <Link
                       href={`/chat/${match.profile.id}`}
-                      className="flex items-center gap-4 p-4 bg-white dark:bg-[#1E0C10] rounded-2xl shadow-card dark:shadow-none border border-transparent dark:border-[#3D1E24] hover:shadow-luxury transition-all duration-200"
+                      className="flex items-center gap-4 p-4 bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl rounded-2xl border border-white/80 dark:border-white/[0.08] shadow-[0_4px_20px_rgba(114,47,55,0.08)] hover:shadow-[0_8px_32px_rgba(114,47,55,0.18)] hover:-translate-y-0.5 transition-all duration-200"
                     >
                       <div className="relative flex-shrink-0">
                         {match.profile.photos[0] ? (
@@ -170,6 +172,7 @@ export default function MatchesPage() {
       )}
 
     </div>
+    </PageWrapper>
   )
 }
 

@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion'
+import {
+  motion, useMotionValue, useTransform, animate,
+  AnimatePresence, useMotionTemplate,
+} from 'framer-motion'
 import { Heart, X, Star, Info, RotateCcw, MessageCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -24,9 +27,33 @@ function SwipeCard({
   const rotate = useTransform(x, [-200, 200], [-18, 18])
   const likeOpacity = useTransform(x, [20, 100], [0, 1])
   const nopeOpacity = useTransform(x, [-20, -100], [0, 1])
+
+  // 3D tilt
+  const cardRef = useRef<HTMLDivElement>(null)
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const glareX = useMotionValue(50)
+  const glareY = useMotionValue(50)
+  const glare = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.18) 0%, transparent 65%)`
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const cx = (e.clientX - rect.left) / rect.width
+    const cy = (e.clientY - rect.top) / rect.height
+    rotateY.set((cx - 0.5) * 22)
+    rotateX.set((0.5 - cy) * 22)
+    glareX.set(cx * 100)
+    glareY.set(cy * 100)
+  }
+
+  const handleMouseLeave = () => {
+    animate(rotateX, 0, { type: 'spring', stiffness: 300, damping: 26 })
+    animate(rotateY, 0, { type: 'spring', stiffness: 300, damping: 26 })
+  }
+
   const [photoIndex, setPhotoIndex] = useState(0)
   const [showInfo, setShowInfo] = useState(false)
-  const dragStartX = useRef(0)
 
   const handleDragEnd = (_: any, info: any) => {
     const offset = info.offset.x
@@ -46,17 +73,18 @@ function SwipeCard({
 
   return (
     <motion.div
+      ref={cardRef}
       className="absolute inset-0"
-      style={{ x, y, rotate, touchAction: 'none' }}
+      style={{ x, y, rotate, rotateX, rotateY, touchAction: 'none', transformPerspective: 1200 }}
       drag={isTop}
       dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
       dragElastic={0.9}
-      onDragStart={(_, info) => { dragStartX.current = info.point.x }}
       onDragEnd={handleDragEnd}
+      onMouseMove={isTop ? handleMouseMove : undefined}
+      onMouseLeave={isTop ? handleMouseLeave : undefined}
       whileTap={{ cursor: 'grabbing' }}
     >
       <div className="relative w-full h-full rounded-4xl overflow-hidden shadow-luxury select-none">
-        {/* Photo */}
         {profile.photos.length > 0 ? (
           <img
             src={profile.photos[photoIndex]}
@@ -72,93 +100,79 @@ function SwipeCard({
           </div>
         )}
 
+        {/* Glare overlay */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none rounded-4xl"
+          style={{ background: glare }}
+        />
+
         {/* Photo tap zones */}
         <div className="absolute inset-0 flex">
-          <div
-            className="w-1/3 h-full cursor-pointer"
-            onClick={() => setPhotoIndex(Math.max(0, photoIndex - 1))}
-          />
+          <div className="w-1/3 h-full cursor-pointer" onClick={() => setPhotoIndex(Math.max(0, photoIndex - 1))} />
           <div className="w-1/3 h-full" />
-          <div
-            className="w-1/3 h-full cursor-pointer"
-            onClick={() => setPhotoIndex(Math.min(profile.photos.length - 1, photoIndex + 1))}
-          />
+          <div className="w-1/3 h-full cursor-pointer" onClick={() => setPhotoIndex(Math.min(profile.photos.length - 1, photoIndex + 1))} />
         </div>
 
         {/* Photo dots */}
         {profile.photos.length > 1 && (
           <div className="absolute top-4 left-4 right-4 flex gap-1">
             {profile.photos.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1 rounded-full flex-1 transition-all ${
-                  i === photoIndex ? 'bg-white' : 'bg-white/40'
-                }`}
-              />
+              <div key={i} className={`h-1 rounded-full flex-1 transition-all ${i === photoIndex ? 'bg-white' : 'bg-white/35'}`} />
             ))}
           </div>
         )}
 
-        {/* Like / Nope overlays */}
+        {/* Like / Nope stamps */}
         <motion.div
           style={{ opacity: likeOpacity }}
-          className="absolute top-12 left-6 border-4 border-green-400 text-green-400 text-2xl font-bold px-4 py-2 rounded-xl rotate-[-12deg]"
+          className="absolute top-12 left-6 border-[3px] border-green-400 text-green-400 text-xl font-bold px-4 py-1.5 rounded-xl rotate-[-12deg] backdrop-blur-sm bg-black/10"
         >
           LIKE
         </motion.div>
         <motion.div
           style={{ opacity: nopeOpacity }}
-          className="absolute top-12 right-6 border-4 border-red-400 text-red-400 text-2xl font-bold px-4 py-2 rounded-xl rotate-[12deg]"
+          className="absolute top-12 right-6 border-[3px] border-red-400 text-red-400 text-xl font-bold px-4 py-1.5 rounded-xl rotate-[12deg] backdrop-blur-sm bg-black/10"
         >
           NOPE
         </motion.div>
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+        {/* Bottom gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
 
         {/* Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex items-end justify-between">
             <div>
-              <h3 className="text-white text-2xl font-serif font-bold">
+              <h3 className="text-white text-2xl font-serif font-bold drop-shadow-sm">
                 {profile.name}, {age}
               </h3>
-              {profile.city && (
-                <p className="text-white/70 text-sm mt-1">{profile.city}</p>
-              )}
-              {/* Match score */}
-              {profile.match_score && (
+              {profile.city && <p className="text-white/70 text-sm mt-0.5">{profile.city}</p>}
+              {profile.match_score != null && profile.match_score > 0 && (
                 <div className="flex items-center gap-1.5 mt-2">
-                  <Star className="w-4 h-4 text-gold-400 fill-gold-400" />
-                  <span className="text-gold-400 text-sm font-semibold">
-                    {profile.match_score}% Match
-                  </span>
+                  <Star className="w-3.5 h-3.5 text-gold-400 fill-gold-400" />
+                  <span className="text-gold-400 text-sm font-semibold">{profile.match_score}% Match</span>
                 </div>
               )}
             </div>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.88 }}
               onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo) }}
-              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center"
             >
               <Info className="w-5 h-5 text-white" />
-            </button>
+            </motion.button>
           </div>
 
-          {/* Interests preview */}
           {!showInfo && profile.interests && (
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {profile.interests.slice(0, 4).map((interest) => (
-                <span
-                  key={interest}
-                  className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full"
-                >
+                <span key={interest} className="bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs px-3 py-1 rounded-full">
                   {interest}
                 </span>
               ))}
             </div>
           )}
 
-          {/* Expanded info */}
           <AnimatePresence>
             {showInfo && (
               <motion.div
@@ -168,12 +182,9 @@ function SwipeCard({
                 className="overflow-hidden"
               >
                 <p className="text-white/80 text-sm mt-3 leading-relaxed">{profile.bio}</p>
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-3">
                   {profile.interests?.map((interest) => (
-                    <span
-                      key={interest}
-                      className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full"
-                    >
+                    <span key={interest} className="bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs px-3 py-1 rounded-full">
                       {interest}
                     </span>
                   ))}
@@ -193,9 +204,7 @@ export default function DiscoverPage() {
   const [showMatch, setShowMatch] = useState<Profile | null>(null)
   const [swipedAll, setSwipedAll] = useState(false)
 
-  useEffect(() => {
-    loadProfiles()
-  }, [])
+  useEffect(() => { loadProfiles() }, [])
 
   const loadProfiles = async () => {
     setLoading(true)
@@ -203,7 +212,6 @@ export default function DiscoverPage() {
       const res = await api.get('/matching/discover')
       setProfiles(res.data.profiles)
     } catch {
-      // Demo profiles for development
       setProfiles(DEMO_PROFILES)
     } finally {
       setLoading(false)
@@ -217,31 +225,37 @@ export default function DiscoverPage() {
 
     if (dir === 'right' || dir === 'super') {
       try {
-        const res = await api.post('/matching/swipe', {
-          target_id: profile.id,
-          direction: dir,
-        })
-        if (res.data.matched) {
-          setShowMatch(profile)
-        }
+        const res = await api.post('/matching/swipe', { target_id: profile.id, direction: dir })
+        if (res.data.matched) setShowMatch(profile)
       } catch {
-        // In demo mode, occasionally show a match
         if (Math.random() > 0.6) setShowMatch(profile)
       }
     }
   }
 
-  const currentProfile = profiles[profiles.length - 1]
-  const secondProfile = profiles[profiles.length - 2]
+  const currentProfile  = profiles[profiles.length - 1]
+  const secondProfile   = profiles[profiles.length - 2]
+  const thirdProfile    = profiles[profiles.length - 3]
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen flex flex-col"
+    >
       {/* Header */}
       <div className="px-6 pt-safe-top pt-6 pb-4 flex items-center justify-between">
         <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100">Discover</h1>
-        <button onClick={loadProfiles} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
-          <RotateCcw className="w-5 h-5" />
-        </button>
+        <motion.button
+          whileHover={{ rotate: -45 }}
+          whileTap={{ scale: 0.88 }}
+          onClick={loadProfiles}
+          transition={{ duration: 0.3 }}
+          className="w-9 h-9 rounded-full bg-white/60 dark:bg-white/[0.06] backdrop-blur-sm border border-white/70 dark:border-white/10 flex items-center justify-center text-burgundy-800/60 hover:text-burgundy-900 shadow-sm"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </motion.button>
       </div>
 
       {/* Card stack */}
@@ -249,33 +263,47 @@ export default function DiscoverPage() {
         {loading ? (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-3 border-cream-300 border-t-burgundy-900 rounded-full animate-spin" />
-            <p className="text-burgundy-800/60">Finding your matches...</p>
+            <p className="text-burgundy-800/60">Finding your matches…</p>
           </div>
         ) : swipedAll || profiles.length === 0 ? (
-          <div className="text-center px-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center px-8"
+          >
             <Heart className="w-16 h-16 text-burgundy-900/20 mx-auto mb-4" />
-            <h3 className="font-serif text-2xl font-bold text-burgundy-950 mb-2">You're all caught up</h3>
-            <p className="text-burgundy-800/60 mb-6">Check back later for new matches, or see who liked you.</p>
+            <h3 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100 mb-2">You're all caught up</h3>
+            <p className="text-burgundy-800/60 mb-6">Check back later for new matches.</p>
             <Link href="/matches" className="btn-primary inline-flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
               View Matches
             </Link>
-          </div>
+          </motion.div>
         ) : (
-          <div className="relative w-full max-w-sm aspect-[3/4]">
-            {/* Second card (background) */}
-            {secondProfile && (
-              <div className="absolute inset-0 scale-95 translate-y-3 opacity-60 rounded-4xl overflow-hidden">
-                <div className="w-full h-full bg-gradient-luxury" />
+          <div className="relative w-full max-w-sm aspect-[3/4]" style={{ perspective: '1400px' }}>
+            {/* Third card (deepest) */}
+            {thirdProfile && (
+              <div className="absolute inset-0 rounded-4xl overflow-hidden scale-[0.87] translate-y-10 opacity-35 pointer-events-none">
+                {thirdProfile.photos[0]
+                  ? <img src={thirdProfile.photos[0]} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full bg-gradient-luxury" />}
               </div>
             )}
-            {/* Current card */}
+            {/* Second card */}
+            {secondProfile && (
+              <div className="absolute inset-0 rounded-4xl overflow-hidden scale-[0.93] translate-y-5 opacity-60 pointer-events-none">
+                {secondProfile.photos[0]
+                  ? <img src={secondProfile.photos[0]} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full bg-gradient-luxury" />}
+              </div>
+            )}
+            {/* Top card */}
             {currentProfile && (
               <SwipeCard
                 key={currentProfile.id}
                 profile={currentProfile}
                 onSwipe={(dir) => handleSwipe(dir, currentProfile)}
-                isTop={true}
+                isTop
               />
             )}
           </div>
@@ -284,26 +312,37 @@ export default function DiscoverPage() {
 
       {/* Action buttons */}
       {!loading && !swipedAll && profiles.length > 0 && (
-        <div className="pb-28 px-6">
-          <div className="flex items-center justify-center gap-6">
-            <button
+        <div className="pb-32 px-6">
+          <div className="flex items-center justify-center gap-5">
+            {/* Nope */}
+            <motion.button
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => currentProfile && handleSwipe('left', currentProfile)}
-              className="w-14 h-14 rounded-full bg-white shadow-card border border-cream-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+              className="w-14 h-14 rounded-full bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm border border-red-100/80 dark:border-red-900/30 flex items-center justify-center shadow-[0_4px_20px_rgba(239,68,68,0.15)] hover:shadow-[0_6px_28px_rgba(239,68,68,0.35)] transition-shadow"
             >
-              <X className="w-7 h-7 text-red-400" />
-            </button>
-            <button
+              <X className="w-7 h-7 text-red-400" strokeWidth={2.5} />
+            </motion.button>
+
+            {/* Super */}
+            <motion.button
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => currentProfile && handleSwipe('super', currentProfile)}
-              className="w-14 h-14 rounded-full bg-gradient-luxury shadow-luxury flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+              className="w-14 h-14 rounded-full bg-gradient-luxury flex items-center justify-center shadow-[0_4px_24px_rgba(114,47,55,0.45)] hover:shadow-[0_6px_32px_rgba(201,169,110,0.5)] transition-shadow"
             >
               <Star className="w-7 h-7 text-gold-400 fill-gold-400" />
-            </button>
-            <button
+            </motion.button>
+
+            {/* Like */}
+            <motion.button
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => currentProfile && handleSwipe('right', currentProfile)}
-              className="w-14 h-14 rounded-full bg-white shadow-card border border-cream-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+              className="w-16 h-16 rounded-full bg-white/70 dark:bg-white/[0.06] backdrop-blur-sm border border-burgundy-200/60 dark:border-burgundy-900/40 flex items-center justify-center shadow-[0_4px_20px_rgba(114,47,55,0.2)] hover:shadow-[0_6px_32px_rgba(114,47,55,0.5)] transition-shadow"
             >
-              <Heart className="w-7 h-7 text-burgundy-900 fill-burgundy-900" />
-            </button>
+              <Heart className="w-8 h-8 text-burgundy-900 fill-burgundy-900" />
+            </motion.button>
           </div>
         </div>
       )}
@@ -315,18 +354,48 @@ export default function DiscoverPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-6"
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center px-6"
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-gradient-luxury rounded-4xl p-8 text-center max-w-sm w-full shadow-luxury"
+              initial={{ scale: 0.75, opacity: 0, y: 24 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+              className="relative bg-gradient-luxury rounded-4xl p-8 text-center max-w-sm w-full overflow-hidden shadow-luxury"
             >
-              <div className="text-4xl mb-4">💘</div>
+              {/* Floating hearts */}
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute text-xl pointer-events-none"
+                  style={{ left: '50%', top: '50%' }}
+                  initial={{ opacity: 1, scale: 0, x: '-50%', y: '-50%' }}
+                  animate={{
+                    opacity: 0,
+                    scale: 1.4,
+                    x: `calc(-50% + ${Math.cos((i * 45 * Math.PI) / 180) * 110}px)`,
+                    y: `calc(-50% + ${Math.sin((i * 45 * Math.PI) / 180) * 110}px)`,
+                  }}
+                  transition={{ duration: 0.9, delay: i * 0.06, ease: 'easeOut' }}
+                >
+                  ❤️
+                </motion.div>
+              ))}
+
+              {/* Shimmer line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 18, delay: 0.1 }}
+                className="text-5xl mb-4"
+              >
+                💘
+              </motion.div>
               <h2 className="font-serif text-3xl font-bold text-cream-100 mb-2">It's a Match!</h2>
-              <p className="text-cream-300 mb-6">
-                You and <strong>{showMatch.name}</strong> both liked each other.
+              <p className="text-cream-300/80 mb-7">
+                You and <strong className="text-cream-100">{showMatch.name}</strong> both liked each other.
               </p>
               <div className="flex gap-3 flex-col">
                 <Link
@@ -338,7 +407,7 @@ export default function DiscoverPage() {
                 </Link>
                 <button
                   onClick={() => setShowMatch(null)}
-                  className="text-cream-300 hover:text-cream-100 transition-colors text-sm"
+                  className="text-cream-300/60 hover:text-cream-100 transition-colors text-sm py-1"
                 >
                   Keep Swiping
                 </button>
@@ -347,41 +416,24 @@ export default function DiscoverPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-    </div>
+    </motion.div>
   )
 }
 
-// Demo profiles for development / offline mode
 const DEMO_PROFILES: Profile[] = [
   {
-    id: '1',
-    name: 'Sophia',
-    birthdate: '1999-03-15',
-    city: 'New York',
-    bio: 'I consume way too much indie cinema and defend it to people who only watch Marvel. Architecture student, chronic overcooker, and the person your horoscope warned you about.',
-    photos: [],
-    interests: ['Indie Films', 'Architecture', 'Cooking', 'Astrology', 'Thrifting'],
-    match_score: 94,
+    id: '1', name: 'Sophia', birthdate: '1999-03-15', city: 'New York',
+    bio: 'I consume way too much indie cinema and defend it to people who only watch Marvel. Architecture student, chronic overcooker.',
+    photos: [], interests: ['Indie Films', 'Architecture', 'Cooking', 'Astrology', 'Thrifting'], match_score: 94,
   },
   {
-    id: '2',
-    name: 'Jordan',
-    birthdate: '1997-07-22',
-    city: 'Los Angeles',
-    bio: 'Stand-up comedian by night, barista by day. I\'ll make you laugh until you snort, then apologize for embarrassing you.',
-    photos: [],
-    interests: ['Stand-up Comedy', 'Coffee', 'Skateboarding', 'Jazz', 'True Crime'],
-    match_score: 87,
+    id: '2', name: 'Jordan', birthdate: '1997-07-22', city: 'Los Angeles',
+    bio: 'Stand-up comedian by night, barista by day.',
+    photos: [], interests: ['Stand-up Comedy', 'Coffee', 'Skateboarding', 'Jazz'], match_score: 87,
   },
   {
-    id: '3',
-    name: 'Maya',
-    birthdate: '2000-11-08',
-    city: 'Chicago',
-    bio: 'PhD student in behavioral economics. I\'ll analyze your decision-making in the most charming way possible. Big fan of hiking and even bigger fan of talking about hiking.',
-    photos: [],
-    interests: ['Economics', 'Hiking', 'Reading', 'Philosophy', 'Yoga'],
-    match_score: 91,
+    id: '3', name: 'Maya', birthdate: '2000-11-08', city: 'Chicago',
+    bio: 'PhD student in behavioral economics. Big fan of hiking.',
+    photos: [], interests: ['Economics', 'Hiking', 'Reading', 'Philosophy', 'Yoga'], match_score: 91,
   },
 ]

@@ -9,6 +9,7 @@ import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { INTEREST_CATEGORIES } from '@/lib/constants'
+import PageWrapper from '@/components/PageWrapper'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -90,7 +91,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-[#120608] pb-24">
+    <PageWrapper>
+    <div className="min-h-screen pb-32">
       {/* Header cover */}
       <div className="h-40 bg-gradient-luxury relative">
         <div className="absolute top-4 right-4 flex gap-2">
@@ -253,5 +255,6 @@ export default function ProfilePage() {
       </div>
 
     </div>
+    </PageWrapper>
   )
 }

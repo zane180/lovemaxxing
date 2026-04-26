@@ -222,7 +222,12 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen h-dvh bg-cream-100 dark:bg-[#120608] flex flex-col max-w-2xl mx-auto overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, x: 28 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="h-screen h-dvh flex flex-col max-w-2xl mx-auto overflow-hidden"
+    >
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-[#1E0C10] border-b border-cream-300 dark:border-[#3D1E24] px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
@@ -470,7 +475,7 @@ export default function ChatPage() {
           onClose={() => setShowGifPicker(false)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }
 
