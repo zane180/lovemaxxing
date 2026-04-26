@@ -129,6 +129,12 @@ def get_matches(
             last_msg = sorted_msgs[0]
             unread = sum(1 for m in match.messages if not m.read and m.sender_id != current_user.id)
 
+        # Always recompute so score reflects current profile data
+        score = compute_match_score(current_user, other)
+        if score != match.match_score:
+            match.match_score = score
+            db.commit()
+
         result.append({
             "id": match.id,
             "profile": {
@@ -142,7 +148,7 @@ def get_matches(
                 "vibes": other.vibes or [],
                 "analyzed_features": other.analyzed_features or [],
                 "onboarding_complete": other.onboarding_complete,
-                "match_score": match.match_score,
+                "match_score": score,
             },
             "matched_at": match.created_at,
             "last_message": {
