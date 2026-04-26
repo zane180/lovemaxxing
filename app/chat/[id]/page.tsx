@@ -21,12 +21,14 @@ interface MediaPreview {
   file?: File
 }
 
+type LocalMessage = Message & { _clientId?: string }
+
 export default function ChatPage() {
   const { id } = useParams()
   const router = useRouter()
   const { user } = useAuthStore()
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<LocalMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -83,11 +85,16 @@ export default function ChatPage() {
         setMessages((prev) => {
           // Already have the real message (e.g. REST beat WS)
           if (prev.some((m) => m.id === data.id)) return prev
-          // Replace matching optimistic placeholder to avoid duplicates
-          const filtered = prev.filter(
-            (m) => !(m.id.startsWith('temp-') && m.sender_id === data.sender_id && m.content === data.content)
+          // Replace optimistic placeholder in-place, preserving _clientId so React key is stable
+          const tempIdx = prev.findIndex(
+            (m) => m.id.startsWith('temp-') && m.sender_id === data.sender_id && m.content === data.content
           )
-          return [...filtered, data as Message]
+          if (tempIdx !== -1) {
+            const next = [...prev]
+            next[tempIdx] = { ...(data as Message), _clientId: prev[tempIdx]._clientId }
+            return next
+          }
+          return [...prev, data as Message]
         })
         markAsRead(mId)
       }
@@ -184,8 +191,10 @@ export default function ChatPage() {
     }
 
     setSending(true)
-    const optimistic: Message = {
+    const clientId = `client-${Date.now()}`
+    const optimistic: LocalMessage = {
       id: `temp-${Date.now()}`,
+      _clientId: clientId,
       content,
       sender_id: user?.id || 'me',
       created_at: new Date().toISOString(),
@@ -203,7 +212,8 @@ export default function ChatPage() {
         if (prev.some((m) => m.id === res.data.id)) {
           return prev.filter((m) => m.id !== optimistic.id)
         }
-        return prev.map((m) => m.id === optimistic.id ? res.data : m)
+        // Swap in real data preserving _clientId so the React key stays stable (no blink)
+        return prev.map((m) => m.id === optimistic.id ? { ...res.data, _clientId: clientId } : m)
       })
     } catch {
       // keep optimistic in demo mode
@@ -291,6 +301,7 @@ export default function ChatPage() {
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => {
             const isMe = msg.sender_id === user?.id || msg.sender_id === 'me'
+            const key = msg._clientId || msg.id
             const showSeen = isMe && i === lastSeenIndex
             const prevMsg = messages[i - 1]
             const showTimestamp = !prevMsg ||
@@ -300,7 +311,7 @@ export default function ChatPage() {
 
             return (
               <motion.div
-                key={msg.id}
+                key={key}
                 initial={{ opacity: 0, y: 8, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.18 }}
