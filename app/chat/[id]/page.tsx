@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Send, Heart, MoreVertical, Plus, ImageIcon, X } from 'lucide-react'
+import { ArrowLeft, Send, Heart, MoreVertical, Plus, ImageIcon, X, MapPin, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/lib/store'
 import type { Message, Profile } from '@/lib/types'
@@ -36,6 +36,8 @@ export default function ChatPage() {
   const [showReport, setShowReport] = useState(false)
   const [showAttachMenu, setShowAttachMenu] = useState(false)
   const [showGifPicker, setShowGifPicker] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
+  const [photoIdx, setPhotoIdx] = useState(0)
   const [mediaPreview, setMediaPreview] = useState<MediaPreview | null>(null)
   const [matchId, setMatchId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -275,21 +277,24 @@ export default function ChatPage() {
         <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-3 flex-1">
+        <button
+          className="flex items-center gap-3 flex-1 min-w-0 text-left active:opacity-70 transition-opacity"
+          onClick={() => { setPhotoIdx(0); setShowProfile(true) }}
+        >
           {profile?.photos[0] ? (
-            <img src={profile.photos[0]} alt="" className="w-10 h-10 rounded-full object-cover" />
+            <img src={profile.photos[0]} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-burgundy-900/20" />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gradient-luxury flex items-center justify-center">
               <span className="text-cream-100 font-serif font-bold">{profile?.name[0]}</span>
             </div>
           )}
-          <div>
-            <p className="font-semibold text-burgundy-950 dark:text-cream-100 text-sm">{profile?.name}</p>
+          <div className="min-w-0">
+            <p className="font-semibold text-burgundy-950 dark:text-cream-100 text-sm truncate">{profile?.name}</p>
             {profile?.match_score && (
               <p className="text-xs text-gold-500 font-medium">{profile.match_score}% match</p>
             )}
           </div>
-        </div>
+        </button>
         <button
           onClick={() => setShowReport(true)}
           className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors"
@@ -503,6 +508,149 @@ export default function ChatPage() {
         </div>
       </div>
 
+      {/* ── Profile viewer ── */}
+      <AnimatePresence>
+        {showProfile && profile && (
+          <>
+            <motion.div
+              key="profile-backdrop"
+              className="fixed inset-0 bg-black/60 z-[60]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowProfile(false)}
+            />
+            <motion.div
+              key="profile-sheet"
+              className="fixed inset-x-0 bottom-0 z-[61] rounded-t-3xl overflow-hidden bg-white dark:bg-[#1E0C10]"
+              style={{ maxHeight: '92dvh' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+            >
+              {/* Drag handle */}
+              <div className="absolute top-3 left-0 right-0 flex justify-center z-20 pointer-events-none">
+                <div className="w-10 h-1 bg-black/20 dark:bg-white/20 rounded-full" />
+              </div>
+
+              {/* Close */}
+              <button
+                onClick={() => setShowProfile(false)}
+                className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+
+              <div className="overflow-y-auto" style={{ maxHeight: '92dvh' }}>
+                {/* Photo gallery */}
+                <div className="relative bg-black select-none">
+                  {profile.photos.length > 0 ? (
+                    <img
+                      src={profile.photos[photoIdx]}
+                      alt={profile.name}
+                      className="w-full object-cover"
+                      style={{ aspectRatio: '3/4', maxHeight: '70dvh' }}
+                    />
+                  ) : (
+                    <div className="w-full bg-gradient-luxury flex items-center justify-center" style={{ aspectRatio: '3/4', maxHeight: '70dvh' }}>
+                      <span className="text-cream-100 font-serif text-6xl font-bold">{profile.name[0]}</span>
+                    </div>
+                  )}
+
+                  {/* Progress bars */}
+                  {profile.photos.length > 1 && (
+                    <div className="absolute top-5 left-3 right-3 flex gap-1">
+                      {profile.photos.map((_, i) => (
+                        <div key={i} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/30">
+                          <div className={`h-full rounded-full transition-all duration-200 ${i <= photoIdx ? 'bg-white' : 'bg-transparent'}`} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Tap zones */}
+                  {profile.photos.length > 1 && (
+                    <>
+                      <button
+                        className="absolute left-0 top-0 bottom-0 w-2/5"
+                        onClick={() => setPhotoIdx(Math.max(0, photoIdx - 1))}
+                      />
+                      <button
+                        className="absolute right-0 top-0 bottom-0 w-3/5"
+                        onClick={() => setPhotoIdx(Math.min(profile.photos.length - 1, photoIdx + 1))}
+                      />
+                    </>
+                  )}
+
+                  {/* Match score badge */}
+                  {profile.match_score != null && profile.match_score > 0 && (
+                    <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/45 backdrop-blur-md rounded-full px-3 py-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                      <span className="text-white text-sm font-bold">{profile.match_score}%</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="px-6 pt-5 pb-12 space-y-5">
+                  {/* Name / age / city */}
+                  <div>
+                    <h2 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100">
+                      {profile.name}
+                      {profile.birthdate && (
+                        <span className="font-normal">, {getAge(profile.birthdate)}</span>
+                      )}
+                    </h2>
+                    {profile.city && (
+                      <p className="flex items-center gap-1.5 text-sm text-burgundy-800/60 dark:text-cream-300/50 mt-1">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        {profile.city}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  {profile.bio && (
+                    <p className="text-burgundy-800/80 dark:text-cream-200/70 leading-relaxed text-[15px]">
+                      {profile.bio}
+                    </p>
+                  )}
+
+                  {/* Interests */}
+                  {profile.interests && profile.interests.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold text-burgundy-800/40 dark:text-cream-300/30 uppercase tracking-widest mb-3">Interests</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.interests.map((t) => (
+                          <span key={t} className="px-3 py-1.5 rounded-full text-sm bg-burgundy-900/8 dark:bg-white/6 text-burgundy-900 dark:text-cream-200">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Vibes */}
+                  {profile.vibes && profile.vibes.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-semibold text-burgundy-800/40 dark:text-cream-300/30 uppercase tracking-widest mb-3">Vibe</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.vibes.map((v) => (
+                          <span key={v} className="px-3 py-1.5 rounded-full text-sm bg-gold-500/12 text-gold-700 dark:text-gold-400 font-medium">
+                            {v}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {showReport && profile && (
         <ReportModal
           userId={profile.id}
@@ -520,6 +668,15 @@ export default function ChatPage() {
       )}
     </motion.div>
   )
+}
+
+function getAge(birthdate: string): number {
+  const birth = new Date(birthdate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
 }
 
 const DEMO_PROFILE: Profile = {
