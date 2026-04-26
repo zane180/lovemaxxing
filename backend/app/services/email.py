@@ -69,7 +69,7 @@ def _base_template(content: str) -> str:
             <tr>
               <td style="padding:24px 32px;border-top:1px solid #EDE4D5;text-align:center;">
                 <p style="color:#8f1a3c;font-size:12px;margin:0;">
-                  © 2025 Lovemaxxing · <a href="{settings.FRONTEND_URL}/privacy" style="color:#722F37;">Privacy</a> ·
+                  © 2026 Lovemaxxing · <a href="{settings.FRONTEND_URL}/privacy" style="color:#722F37;">Privacy</a> ·
                   <a href="{settings.FRONTEND_URL}/terms" style="color:#722F37;">Terms</a>
                 </p>
               </td>

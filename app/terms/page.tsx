@@ -21,7 +21,7 @@ export default function TermsPage() {
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="font-serif text-4xl font-bold text-burgundy-950 mb-2">Terms of Service</h1>
-        <p className="text-burgundy-800/60 mb-12">Last updated: April 2025</p>
+        <p className="text-burgundy-800/60 mb-12">Last updated: April 2026</p>
 
         {[
           {
@@ -105,7 +105,7 @@ Upon termination, your right to use the service ceases immediately. Data deletio
 
       <footer className="border-t border-cream-300 py-8 px-6 text-center">
         <p className="text-sm text-burgundy-800/50">
-          © 2025 Lovemaxxing ·{' '}
+          © 2026 Lovemaxxing ·{' '}
           <Link href="/terms" className="hover:text-burgundy-900">Terms</Link> ·{' '}
           <Link href="/privacy" className="hover:text-burgundy-900">Privacy</Link>
         </p>
