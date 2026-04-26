@@ -16,6 +16,13 @@ export default function MatchesPage() {
 
   useEffect(() => {
     loadMatches()
+    const refresh = () => { if (!document.hidden) loadMatches() }
+    document.addEventListener('visibilitychange', refresh)
+    window.addEventListener('focus', refresh)
+    return () => {
+      document.removeEventListener('visibilitychange', refresh)
+      window.removeEventListener('focus', refresh)
+    }
   }, [])
 
   const loadMatches = async () => {
@@ -158,8 +165,13 @@ export default function MatchesPage() {
                             </p>
                           )}
                         </div>
-                        <p className={`text-sm truncate ${match.unread ? 'text-burgundy-950 font-medium' : 'text-burgundy-800/60'}`}>
-                          {match.last_message?.content || 'Say hi!'}
+                        <p className={`text-sm truncate ${match.unread ? 'text-burgundy-950 dark:text-cream-100 font-medium' : 'text-burgundy-800/60 dark:text-cream-300/50'}`}>
+                          {match.last_message
+                            ? match.last_message.content ||
+                              (match.last_message.media_type === 'image' ? '📷 Photo' :
+                               match.last_message.media_type === 'video' ? '🎥 Video' :
+                               match.last_message.media_type === 'gif'   ? 'GIF' : '…')
+                            : 'Say hi! 👋'}
                         </p>
                       </div>
                     </Link>

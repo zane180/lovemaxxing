@@ -42,7 +42,7 @@ export interface Match {
   id: string
   profile: Profile
   matched_at: string
-  last_message?: Message
+  last_message?: Pick<Message, 'id' | 'content' | 'sender_id' | 'created_at' | 'media_type'>
   unread?: number
 }
 

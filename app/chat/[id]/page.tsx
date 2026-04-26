@@ -81,15 +81,21 @@ export default function ChatPage() {
       }
       if (data.type === 'message') {
         setMessages((prev) => {
+          // Already have the real message (e.g. REST beat WS)
           if (prev.some((m) => m.id === data.id)) return prev
-          return [...prev, data as Message]
+          // Replace matching optimistic placeholder to avoid duplicates
+          const filtered = prev.filter(
+            (m) => !(m.id.startsWith('temp-') && m.sender_id === data.sender_id && m.content === data.content)
+          )
+          return [...filtered, data as Message]
         })
         markAsRead(mId)
       }
     }
 
     ws.onclose = () => {
-      if (!isMounted.current) return
+      // Only reconnect if this is still the active socket (not one we intentionally replaced)
+      if (!isMounted.current || wsRef.current !== ws) return
       const delay = Math.min(1000 * 2 ** reconnectAttempts.current, 30000)
       reconnectAttempts.current++
       reconnectTimer.current = setTimeout(() => connectWebSocket(mId), delay)
@@ -192,7 +198,13 @@ export default function ChatPage() {
     try {
       const targetId = matchId || (id as string)
       const res = await api.post(`/chat/${targetId}/messages`, { content, media_url, media_type })
-      setMessages((prev) => prev.map((m) => m.id === optimistic.id ? res.data : m))
+      setMessages((prev) => {
+        // If WS already delivered the real message, just drop the optimistic placeholder
+        if (prev.some((m) => m.id === res.data.id)) {
+          return prev.filter((m) => m.id !== optimistic.id)
+        }
+        return prev.map((m) => m.id === optimistic.id ? res.data : m)
+      })
     } catch {
       // keep optimistic in demo mode
     } finally {

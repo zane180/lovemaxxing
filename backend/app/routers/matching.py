@@ -156,6 +156,7 @@ def get_matches(
                 "content": last_msg.content,
                 "sender_id": last_msg.sender_id,
                 "created_at": last_msg.created_at,
+                "media_type": last_msg.media_type,
             } if last_msg else None,
             "unread": unread,
         })
