@@ -45,6 +45,7 @@ export default function ChatPage() {
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttempts = useRef(0)
   const isMounted = useRef(true)
+  const profileRef = useRef<Profile | null>(null)
 
   useEffect(() => {
     isMounted.current = true
@@ -55,6 +56,8 @@ export default function ChatPage() {
       wsRef.current?.close()
     }
   }, [id])
+
+  useEffect(() => { profileRef.current = profile }, [profile])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -97,6 +100,18 @@ export default function ChatPage() {
           return [...prev, data as Message]
         })
         markAsRead(mId)
+        // Notify if this person messaged us while the app is backgrounded
+        if (data.sender_id !== user?.id && document.hidden
+          && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          const body = data.content
+            || (data.media_type === 'image' ? '📷 Photo'
+              : data.media_type === 'video' ? '🎥 Video'
+              : data.media_type === 'gif'   ? 'GIF' : '…')
+          const notif = new Notification(profileRef.current?.name ?? 'New message', {
+            body, icon: '/apple-icon.png', tag: `lm-${mId}`,
+          })
+          notif.onclick = () => window.focus()
+        }
       }
     }
 
@@ -125,6 +140,11 @@ export default function ChatPage() {
       if (match) {
         setMatchId(match.id)
         connectWebSocket(match.id)
+        // Immediately drop this chat's unread from the global badge
+        if (match.unread && match.unread > 0) {
+          const store = useAuthStore.getState()
+          store.setTotalUnread(Math.max(0, store.totalUnread - match.unread))
+        }
       }
     } catch {
       setProfile(DEMO_PROFILE)
