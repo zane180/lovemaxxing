@@ -133,26 +133,28 @@ export default function ProfilePage() {
           <h1 className="font-serif text-2xl font-bold text-burgundy-950 dark:text-cream-100">
             {user?.name}{age ? `, ${age}` : ''}
           </h1>
-          {user?.city && <p className="text-burgundy-800/60 text-sm mt-1">{user.city}</p>}
+          {user?.city && (
+            <p className="text-burgundy-800/60 dark:text-cream-300/50 text-sm mt-1">{user.city}</p>
+          )}
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
             { label: 'Matches', value: stats?.matches, icon: Heart },
-            { label: 'Likes', value: stats?.likes, icon: Star },
-            { label: 'Score', value: stats != null ? `${stats.avg_score}%` : undefined, icon: Sparkles },
+            { label: 'Likes',   value: stats?.likes,   icon: Star },
+            { label: 'Score',   value: stats != null ? `${stats.avg_score}%` : undefined, icon: Sparkles },
           ].map((stat) => {
             const Icon = stat.icon
             return (
               <div key={stat.label} className="card text-center py-4">
-                <Icon className="w-5 h-5 text-burgundy-900 mx-auto mb-1" />
+                <Icon className="w-5 h-5 text-burgundy-900 dark:text-gold-400 mx-auto mb-1" />
                 {stat.value != null ? (
                   <p className="font-bold text-burgundy-950 dark:text-cream-100 text-lg">{stat.value}</p>
                 ) : (
                   <div className="h-7 w-10 bg-burgundy-100 dark:bg-burgundy-900/30 rounded-md animate-pulse mx-auto mb-0.5" />
                 )}
-                <p className="text-xs text-burgundy-800/50">{stat.label}</p>
+                <p className="text-xs text-burgundy-800/50 dark:text-cream-300/40">{stat.label}</p>
               </div>
             )
           })}
@@ -161,24 +163,24 @@ export default function ProfilePage() {
         {/* Bio */}
         <div className="card-luxury mb-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-serif font-semibold text-burgundy-950">About me</h3>
+            <h3 className="font-serif font-semibold text-burgundy-950 dark:text-cream-100">About me</h3>
             {!editing ? (
               <button
                 onClick={() => setEditing(true)}
-                className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors"
+                className="text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
             ) : (
               <div className="flex gap-2">
                 <button onClick={() => { setEditing(false); setBio(user?.bio || '') }}>
-                  <X className="w-4 h-4 text-burgundy-800/60" />
+                  <X className="w-4 h-4 text-burgundy-800/60 dark:text-cream-300/50" />
                 </button>
                 <button onClick={saveBio} disabled={saving}>
                   {saving ? (
                     <div className="w-4 h-4 border-2 border-burgundy-900/30 border-t-burgundy-900 rounded-full animate-spin" />
                   ) : (
-                    <Check className="w-4 h-4 text-burgundy-900" />
+                    <Check className="w-4 h-4 text-burgundy-900 dark:text-gold-400" />
                   )}
                 </button>
               </div>
@@ -193,7 +195,7 @@ export default function ProfilePage() {
               placeholder="Tell people about yourself..."
             />
           ) : (
-            <p className="text-burgundy-800/70 text-sm leading-relaxed">
+            <p className="text-burgundy-800/70 dark:text-cream-200/70 text-sm leading-relaxed">
               {bio || 'Add a bio to attract better matches.'}
             </p>
           )}
@@ -202,21 +204,21 @@ export default function ProfilePage() {
         {/* Interests */}
         <div className="card-luxury">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-serif font-semibold text-burgundy-950">Interests</h3>
+            <h3 className="font-serif font-semibold text-burgundy-950 dark:text-cream-100">Interests</h3>
             {!editingInterests ? (
               <button
                 onClick={() => setEditingInterests(true)}
-                className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors"
+                className="text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
             ) : (
               <div className="flex gap-2">
                 <button onClick={() => { setEditingInterests(false); setInterests(user?.interests || []) }}>
-                  <X className="w-4 h-4 text-burgundy-800/60" />
+                  <X className="w-4 h-4 text-burgundy-800/60 dark:text-cream-300/50" />
                 </button>
                 <button onClick={saveInterests}>
-                  <Check className="w-4 h-4 text-burgundy-900" />
+                  <Check className="w-4 h-4 text-burgundy-900 dark:text-gold-400" />
                 </button>
               </div>
             )}
@@ -226,7 +228,7 @@ export default function ProfilePage() {
             <div className="space-y-4 max-h-80 overflow-y-auto">
               {INTEREST_CATEGORIES.map((cat) => (
                 <div key={cat.label}>
-                  <p className="text-xs uppercase tracking-widest text-burgundy-800/40 mb-2">{cat.label}</p>
+                  <p className="text-xs uppercase tracking-widest text-burgundy-800/40 dark:text-cream-300/30 mb-2">{cat.label}</p>
                   <div className="flex flex-wrap gap-2">
                     {cat.items.map((item) => (
                       <button
@@ -247,7 +249,7 @@ export default function ProfilePage() {
                 <span key={interest} className="tag tag-active text-sm">{interest}</span>
               ))}
               {(user?.interests || []).length === 0 && (
-                <p className="text-sm text-burgundy-800/50">No interests added yet.</p>
+                <p className="text-sm text-burgundy-800/50 dark:text-cream-300/40">No interests added yet.</p>
               )}
             </div>
           )}

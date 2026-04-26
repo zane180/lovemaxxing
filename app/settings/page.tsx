@@ -114,7 +114,7 @@ export default function SettingsPage() {
     <div className="min-h-screen pb-32">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/60 dark:bg-[#120608]/80 backdrop-blur-2xl border-b border-white/50 dark:border-[#3D1E24]/60 px-6 pt-6 pb-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-burgundy-800/60 hover:text-burgundy-900 transition-colors">
+        <button onClick={() => router.back()} className="text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="font-serif text-xl font-bold text-burgundy-950 dark:text-cream-100">Settings</h1>
@@ -158,12 +158,12 @@ export default function SettingsPage() {
         {/* Discovery Preferences */}
         <section className="card-luxury space-y-5">
           <div className="flex items-center gap-2 mb-1">
-            <Search className="w-5 h-5 text-burgundy-900" />
-            <h2 className="font-serif font-semibold text-burgundy-950">Discovery</h2>
+            <Search className="w-5 h-5 text-burgundy-900 dark:text-gold-400" />
+            <h2 className="font-serif font-semibold text-burgundy-950 dark:text-cream-100">Discovery</h2>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-burgundy-950 mb-2">Show Me</label>
+            <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Show Me</label>
             <select
               className="input-field"
               value={interestedIn}
@@ -176,12 +176,12 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-burgundy-950 mb-3">
-              Age Range: <span className="text-burgundy-900 font-bold">{minAge} – {maxAge}</span>
+            <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-3">
+              Age Range: <span className="text-burgundy-900 dark:text-gold-400 font-bold">{minAge} – {maxAge}</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-burgundy-800/60 mb-1 block">Min age</label>
+                <label className="text-xs text-burgundy-800/60 dark:text-cream-300/50 mb-1 block">Min age</label>
                 <input
                   type="number"
                   min={18}
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-burgundy-800/60 mb-1 block">Max age</label>
+                <label className="text-xs text-burgundy-800/60 dark:text-cream-300/50 mb-1 block">Max age</label>
                 <input
                   type="number"
                   min={minAge + 1}
@@ -207,8 +207,8 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-burgundy-950">Show my profile</p>
-              <p className="text-xs text-burgundy-800/50">When off, you won't appear in Discover</p>
+              <p className="text-sm font-medium text-burgundy-950 dark:text-cream-100">Show my profile</p>
+              <p className="text-xs text-burgundy-800/50 dark:text-cream-300/40">When off, you won't appear in Discover</p>
             </div>
             <button
               onClick={() => setShowMe((v) => !v)}
@@ -226,12 +226,12 @@ export default function SettingsPage() {
         {/* Change Password */}
         <section className="card-luxury space-y-4">
           <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-5 h-5 text-burgundy-900" />
-            <h2 className="font-serif font-semibold text-burgundy-950">Change Password</h2>
+            <Shield className="w-5 h-5 text-burgundy-900 dark:text-gold-400" />
+            <h2 className="font-serif font-semibold text-burgundy-950 dark:text-cream-100">Change Password</h2>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-burgundy-950 mb-2">Current Password</label>
+            <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Current Password</label>
             <div className="relative">
               <input
                 type={showPw ? 'text' : 'password'}
@@ -243,7 +243,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowPw((v) => !v)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 hover:text-burgundy-900"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 dark:text-cream-300/30 hover:text-burgundy-900 dark:hover:text-cream-100"
               >
                 {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -251,7 +251,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-burgundy-950 mb-2">New Password</label>
+            <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">New Password</label>
             <input
               type={showPw ? 'text' : 'password'}
               className="input-field"
@@ -268,7 +268,7 @@ export default function SettingsPage() {
 
         {/* Legal */}
         <section className="card-luxury">
-          <h2 className="font-serif font-semibold text-burgundy-950 mb-4">Legal</h2>
+          <h2 className="font-serif font-semibold text-burgundy-950 dark:text-cream-100 mb-4">Legal</h2>
           <div className="space-y-1">
             {[
               { label: 'Privacy Policy', href: '/privacy' },
@@ -277,10 +277,10 @@ export default function SettingsPage() {
               <Link
                 key={href}
                 href={href}
-                className="flex items-center justify-between py-3 text-sm text-burgundy-950 hover:text-burgundy-900 border-b border-cream-200 last:border-0"
+                className="flex items-center justify-between py-3 text-sm text-burgundy-950 dark:text-cream-100 hover:text-burgundy-900 dark:hover:text-cream-300 border-b border-cream-200 dark:border-white/[0.08] last:border-0"
               >
                 {label}
-                <ChevronRight className="w-4 h-4 text-burgundy-800/40" />
+                <ChevronRight className="w-4 h-4 text-burgundy-800/40 dark:text-cream-300/30" />
               </Link>
             ))}
           </div>
@@ -289,7 +289,7 @@ export default function SettingsPage() {
         {/* Sign Out */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-4 text-burgundy-900 font-medium hover:bg-burgundy-900/5 rounded-2xl transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-4 text-burgundy-900 dark:text-cream-200 font-medium hover:bg-burgundy-900/5 dark:hover:bg-white/[0.06] rounded-2xl transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
@@ -301,7 +301,7 @@ export default function SettingsPage() {
             <Trash2 className="w-5 h-5 text-red-400" />
             <h2 className="font-serif font-semibold text-red-700">Delete Account</h2>
           </div>
-          <p className="text-sm text-burgundy-800/60 mb-4">
+          <p className="text-sm text-burgundy-800/60 dark:text-cream-300/50 mb-4">
             Permanently deletes your profile, photos, matches, and messages. This cannot be undone.
           </p>
 
@@ -325,7 +325,7 @@ export default function SettingsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowDelete(false); setDeleteConfirm('') }}
-                  className="flex-1 py-3 border border-cream-400 rounded-2xl text-sm font-medium text-burgundy-800/60 hover:bg-cream-200 transition-colors"
+                  className="flex-1 py-3 border border-cream-400 dark:border-white/10 rounded-2xl text-sm font-medium text-burgundy-800/60 dark:text-cream-300/50 hover:bg-cream-200 dark:hover:bg-white/[0.06] transition-colors"
                 >
                   Cancel
                 </button>
