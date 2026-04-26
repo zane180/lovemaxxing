@@ -17,7 +17,7 @@ const T = {
   arrowLaunch: 6400,   // ~1.5 s of heartbeat visible before arrow
   arrowHit:    8500,   // 2.1 s elegant flight
   burstStart:  8950,
-  done:        10900,
+  done:        11400,  // 2.45s after burst — enough for fade (0.35 + 1.8s) to fully complete
 }
 
 /* ── SVG components ──────────────────────────────────────────── */
@@ -177,25 +177,49 @@ export default function SplashScreen({ onComplete }: Props) {
     return { initX, initY, finalX, finalY, overshootX, overshootY, angleDeg, angleRad }
   }, [aPos])
 
-  /* ── Burst hearts ── */
-  const burstHearts = useMemo(() => {
-    if (!bursting) return []
-    const cx  = window.innerWidth  / 2
-    const cy  = window.innerHeight / 2
+  /* ── Burst + flood hearts ── */
+  const { radialHearts, floodHearts, screenCx, screenCy } = useMemo(() => {
+    if (!bursting) return { radialHearts: [], floodHearts: [], screenCx: 195, screenCy: 406 }
+    const W   = window.innerWidth
+    const H   = window.innerHeight
+    const cx  = W / 2
+    const cy  = H / 2
     const maxD = Math.sqrt(cx * cx + cy * cy) * 1.25
-    return Array.from({ length: 60 }).map((_, i) => ({
-      angle:    (i / 60) * Math.PI * 2 + ((i * 17) % 7) * 0.06,
-      distance: maxD * (0.35 + ((i * 73 + 41) % 8) * 0.082),
-      size:     9  + ((i * 31 + 13) % 7) * 7,
-      delay:    (i * 0.018) % 0.25,
-      duration: 0.85 + ((i * 23 + 5) % 5) * 0.16,
-      spin:     ((i * 47 + 11) % 3 - 1) * 230,
-      color:    ['#722F37','#C9A84C','#E8A0A8','#FFD700','#FF6B8A','#9E1A2B','#D4A0B0','#FFC0CB'][i % 8],
-    }))
-  }, [bursting])
+    const colors = ['#722F37','#C9A84C','#E8A0A8','#FFD700','#FF6B8A','#9E1A2B','#D4A0B0','#FFC0CB']
 
-  const screenCx = typeof window !== 'undefined' ? window.innerWidth  / 2 : 195
-  const screenCy = typeof window !== 'undefined' ? window.innerHeight / 2 : 406
+    // 80 radial hearts exploding from impact centre
+    const radialHearts = Array.from({ length: 80 }).map((_, i) => ({
+      angle:    (i / 80) * Math.PI * 2 + ((i * 17) % 7) * 0.06,
+      distance: maxD * (0.12 + ((i * 73 + 41) % 11) * 0.08),  // 0.12 → ~1.0 × maxD
+      size:     8 + ((i * 31 + 13) % 8) * 7,
+      delay:    (i * 0.012) % 0.2,
+      duration: 0.85 + ((i * 23 + 5) % 5) * 0.18,
+      spin:     ((i * 47 + 11) % 3 - 1) * 240,
+      color:    colors[i % 8],
+    }))
+
+    // 150 flood hearts in a 15×10 grid covering every pixel of the screen
+    const COLS = 15, ROWS = 10
+    const cW = W / COLS, cH = H / ROWS
+    const floodHearts = Array.from({ length: 150 }).map((_, i) => {
+      const col = i % COLS
+      const row = Math.floor(i / COLS)
+      const jx  = ((i * 137 + 41) % 21 - 10) / 10 * cW * 0.42
+      const jy  = ((i * 173 + 37) % 17 - 8)  /  8 * cH * 0.42
+      const size = 14 + ((i * 29 + 7) % 7) * 9   // 14 – 68 px
+      return {
+        left:     col * cW + cW / 2 + jx - size / 2,
+        top:      row * cH + cH / 2 + jy - size / 2,
+        size,
+        delay:    0.04 + ((i * 19 + 3) % 23) * 0.028,  // 0.04 – 0.68 s
+        duration: 0.55 + ((i * 37 + 11) % 5) * 0.17,   // 0.55 – 1.23 s
+        spin:     ((i * 53 + 7) % 3 - 1) * 170,
+        color:    colors[i % 8],
+      }
+    })
+
+    return { radialHearts, floodHearts, screenCx: cx, screenCy: cy }
+  }, [bursting])
 
   return (
     <motion.div
@@ -376,34 +400,56 @@ export default function SplashScreen({ onComplete }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ── Heart burst — 60 hearts fill entire screen ── */}
+      {/* ── Heart burst: radial explosion + full-screen flood ── */}
       <AnimatePresence>
-        {bursting && burstHearts.length > 0 && (
+        {bursting && (
           <motion.div key="burst" className="fixed inset-0 pointer-events-none" style={{ zIndex:210 }}>
-            {burstHearts.map(({ angle, distance, size, delay, duration, spin, color }, i) => (
-              <motion.div key={i} className="fixed" style={{ top:screenCy, left:screenCx }}>
+
+            {/* Radial: 80 hearts from impact centre */}
+            {radialHearts.map(({ angle, distance, size, delay, duration, spin, color }, i) => (
+              <motion.div key={`r${i}`} className="fixed" style={{ top:screenCy, left:screenCx }}>
                 <motion.div
                   initial={{ x:0, y:0, opacity:0, scale:0, rotate:0 }}
                   animate={{
                     x: Math.cos(angle) * distance,
                     y: Math.sin(angle) * distance,
                     opacity: [0, 1, 1, 0],
-                    scale:   [0, 1.4, 1.1, 0],
+                    scale:   [0, 1.5, 1.1, 0],
                     rotate:  spin,
                   }}
                   transition={{
                     duration, delay, ease:'easeOut',
-                    opacity: { times:[0, 0.12, 0.65, 1] },
-                    scale:   { times:[0, 0.18, 0.55, 1] },
+                    opacity: { times:[0, 0.1, 0.6, 1] },
+                    scale:   { times:[0, 0.16, 0.55, 1] },
                   }}
                 >
-                  <svg viewBox="0 0 40 37" fill={color}
-                    style={{ width:size, height:size, display:'block' }}>
+                  <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
                     <HeartPath/>
                   </svg>
                 </motion.div>
               </motion.div>
             ))}
+
+            {/* Flood: 150 hearts in a 15×10 grid — every corner covered */}
+            {floodHearts.map(({ left, top, size, delay, duration, spin, color }, i) => (
+              <motion.div key={`f${i}`} className="fixed pointer-events-none"
+                style={{ left, top, zIndex:211 }}>
+                <motion.div
+                  initial={{ opacity:0, scale:0, rotate:0 }}
+                  animate={{ opacity:[0, 1, 1, 0], scale:[0, 1.3, 1, 0], rotate:spin }}
+                  transition={{
+                    delay, duration, ease:'easeOut',
+                    opacity: { times:[0, 0.15, 0.65, 1] },
+                    scale:   { times:[0, 0.2, 0.6, 1] },
+                  }}
+                >
+                  <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
+                    <HeartPath/>
+                  </svg>
+                </motion.div>
+              </motion.div>
+            ))}
+
           </motion.div>
         )}
       </AnimatePresence>
