@@ -207,6 +207,21 @@ export default function LandingPage() {
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
             >
               <div className="h-72 bg-gradient-to-br from-[#1a0820] via-[#2d1040] to-[#3d1060] relative">
+                {/* Match score badge — top of card */}
+                <motion.div
+                  className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#080306]/70 border border-gold-500/50 backdrop-blur-sm z-10"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.6, type: 'spring', stiffness: 200 }}
+                  style={{ boxShadow: '0 0 12px rgba(201,169,110,0.3)' }}
+                >
+                  <motion.div
+                    className="w-1.5 h-1.5 rounded-full bg-gold-400"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity }}
+                  />
+                  <span className="text-gold-400 font-bold text-xs">94% match</span>
+                </motion.div>
                 <div className="absolute top-6 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full border-2 border-white/20 bg-white/10 flex items-center justify-center">
                   <span className="text-2xl font-serif font-bold text-white/50">J</span>
                 </div>
@@ -222,48 +237,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </motion.div>
-          </motion.div>
-
-          {/* Match Score Badge — between cards */}
-          <motion.div
-            className="absolute bottom-[18%] left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-0 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-          >
-            <motion.div
-              className="h-px bg-gradient-to-r from-transparent to-burgundy-900/50"
-              initial={{ width: 0 }}
-              animate={{ width: 160 }}
-              transition={{ delay: 2.2, duration: 0.7 }}
-            />
-            <motion.div
-              className="relative flex flex-col items-center justify-center w-[88px] h-[88px] rounded-full border border-gold-500/50 bg-[#080306]"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 3, type: 'spring', stiffness: 180, damping: 14 }}
-              style={{ boxShadow: '0 0 40px rgba(201,169,110,0.35), inset 0 0 20px rgba(201,169,110,0.05)' }}
-            >
-              <motion.span
-                className="text-gold-400 font-bold text-[22px] font-serif leading-none"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 3.4 }}
-              >94%</motion.span>
-              <span className="text-[8px] text-cream-300/40 uppercase tracking-widest mt-0.5">match</span>
-              {/* Pulsing ring */}
-              <motion.div
-                className="absolute inset-[-6px] rounded-full border border-gold-500/20"
-                animate={{ scale: [1, 1.18, 1], opacity: [0.4, 0, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-              />
-            </motion.div>
-            <motion.div
-              className="h-px bg-gradient-to-l from-transparent to-burgundy-900/50"
-              initial={{ width: 0 }}
-              animate={{ width: 160 }}
-              transition={{ delay: 2.2, duration: 0.7 }}
-            />
           </motion.div>
 
           {/* Hero copy */}
