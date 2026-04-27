@@ -114,6 +114,8 @@ export default function SplashScreen({ onComplete }: Props) {
   const aRef                = useRef<HTMLSpanElement>(null)
   const [wrapW, setWrapW]   = useState(0)
   const [aPos,  setAPos]    = useState({ x: 0, y: 0 })
+  const onCompleteRef       = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   const writeProgress = useMotionValue(0)
 
@@ -143,10 +145,10 @@ export default function SplashScreen({ onComplete }: Props) {
       }, T.arrowLaunch),
       setTimeout(() => setPhase('hit'),   T.arrowHit),
       setTimeout(() => setPhase('burst'), T.burstStart),
-      setTimeout(onComplete,              T.done),
+      setTimeout(() => onCompleteRef.current(), T.done),
     ]
     return () => ts.forEach(clearTimeout)
-  }, [onComplete])
+  }, [])
 
   useEffect(() => {
     if (phase !== 'writing') return
