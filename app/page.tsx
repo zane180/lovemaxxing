@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll } from 'framer-motion'
 import { Heart, Sparkles, Brain, Shield, ChevronRight, Star, ArrowDown, Moon, Sun } from 'lucide-react'
 import SplashScreen from '@/components/SplashScreen'
 import { useDarkMode } from '@/lib/useDarkMode'
@@ -72,11 +72,18 @@ export default function LandingPage() {
   const springX = useSpring(mouseX, { stiffness: 40, damping: 25 })
   const springY = useSpring(mouseY, { stiffness: 40, damping: 25 })
   const card1X  = useTransform(springX, v => v * -1.8)
-  const card1Y  = useTransform(springY, v => v * -1.4)
+  const card1MouseY = useTransform(springY, v => v * -1.4)
   const card2X  = useTransform(springX, v => v * 1.4)
-  const card2Y  = useTransform(springY, v => v * 1.8)
+  const card2MouseY = useTransform(springY, v => v * 1.8)
   const orbX    = useTransform(springX, v => v * 2.2)
   const orbY    = useTransform(springY, v => v * 2.2)
+
+  // Scroll parallax for hero cards
+  const { scrollY: scrollYMotion } = useScroll()
+  const card1ScrollY = useTransform(scrollYMotion, [0, 500], [0, -90])
+  const card2ScrollY = useTransform(scrollYMotion, [0, 500], [0, -60])
+  const card1Y = useTransform([card1MouseY, card1ScrollY], ([my, sy]: number[]) => my + sy)
+  const card2Y = useTransform([card2MouseY, card2ScrollY], ([my, sy]: number[]) => my + sy)
 
   useEffect(() => {
     if (sessionStorage.getItem('lm-splash-seen')) setShowSplash(false)
@@ -153,6 +160,61 @@ export default function LandingPage() {
 
         {/* ── HERO ────────────────────────────────────────────────── */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+
+          {/* Living aurora blobs */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Burgundy blob */}
+            <motion.div
+              className="absolute rounded-full blur-[120px]"
+              style={{
+                width: 680, height: 480,
+                top: '8%', left: '-12%',
+                background: dark
+                  ? 'radial-gradient(ellipse, rgba(114,47,55,0.38) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(114,47,55,0.10) 0%, transparent 70%)',
+              }}
+              animate={{
+                x: [0, 55, -30, 55, 0],
+                y: [0, -40, 60, -20, 0],
+                scale: [1, 1.08, 0.94, 1.05, 1],
+              }}
+              transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            {/* Gold blob */}
+            <motion.div
+              className="absolute rounded-full blur-[140px]"
+              style={{
+                width: 560, height: 400,
+                top: '30%', right: '-10%',
+                background: dark
+                  ? 'radial-gradient(ellipse, rgba(201,168,76,0.22) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%)',
+              }}
+              animate={{
+                x: [0, -60, 35, -45, 0],
+                y: [0, 50, -35, 40, 0],
+                scale: [1, 0.92, 1.10, 0.97, 1],
+              }}
+              transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+            />
+            {/* Rose blob */}
+            <motion.div
+              className="absolute rounded-full blur-[100px]"
+              style={{
+                width: 420, height: 340,
+                bottom: '15%', left: '35%',
+                background: dark
+                  ? 'radial-gradient(ellipse, rgba(158,26,43,0.28) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(158,26,43,0.06) 0%, transparent 70%)',
+              }}
+              animate={{
+                x: [0, 40, -50, 25, 0],
+                y: [0, -55, 30, -40, 0],
+                scale: [1, 1.12, 0.90, 1.06, 1],
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 8 }}
+            />
+          </div>
 
           {/* Ambient glow — subtle on light, rich on dark */}
           <motion.div
