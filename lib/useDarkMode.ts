@@ -20,8 +20,11 @@ export function useDarkMode() {
   const toggle = () => {
     setDark((prev) => {
       const next = !prev
+      const html = document.documentElement
+      html.classList.add('theme-transitioning')
+      html.classList.toggle('dark', next)
       localStorage.setItem(darkKey(userId), String(next))
-      document.documentElement.classList.toggle('dark', next)
+      setTimeout(() => html.classList.remove('theme-transitioning'), 500)
       return next
     })
   }

@@ -29,6 +29,20 @@ body {
   scroll-behavior: smooth;
 }
 
+/* During theme toggle, make every element animate its color/bg/border.
+   Scoped to html.theme-transitioning so hover/interaction transitions aren't affected. */
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease,
+    opacity 0.4s ease !important;
+}
+
 /* Animated ambient background */
 body {
   background: linear-gradient(-45deg, #FAF7F2, #F7F1EA, #FAF7F2, #F3EDE3);
