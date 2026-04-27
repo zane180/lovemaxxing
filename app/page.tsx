@@ -274,12 +274,12 @@ export default function LandingPage() {
               AI-Powered Dating That Actually Works
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="font-serif text-5xl md:text-7xl font-bold text-burgundy-950 dark:text-cream-100 leading-[1.05] mb-2">
+            <motion.h1 variants={fadeUp} className="font-serif text-5xl md:text-7xl font-bold text-burgundy-950 dark:text-cream-100 leading-[1.05] mb-4">
               Stop Swiping.
             </motion.h1>
             <motion.h2
               variants={fadeUp}
-              className="text-5xl md:text-7xl font-bold leading-[1.1] mb-8"
+              className="text-5xl md:text-7xl font-bold leading-[1.2] mb-8"
               style={{
                 fontFamily: "'Great Vibes', cursive",
                 background: 'linear-gradient(135deg, #C9A96E 0%, #B8923A 50%, #C9A96E 100%)',
