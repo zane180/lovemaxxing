@@ -17,7 +17,7 @@ const T = {
   arrowLaunch: 6400,
   arrowHit:    8500,
   burstStart:  8950,
-  done:        13800,  // 4.85s of burst — hearts fill screen, linger, then fade
+  done:        12200,  // hearts fill screen, linger 1.2s, fade 1.6s
 }
 
 /* ── SVG components ──────────────────────────────────────────── */
@@ -187,7 +187,7 @@ export default function SplashScreen({ onComplete }: Props) {
     const cx  = W / 2
     const cy  = H / 2
     const maxD = Math.sqrt(cx * cx + cy * cy) * 1.25
-    const colors = ['#722F37','#C9A84C','#E8A0A8','#FFD700','#FF6B8A','#9E1A2B','#D4A0B0','#FFC0CB']
+    const colors = ['#722F37','#4A1520','#9E1A2B','#C9A84C','#B8923A','#8B1A2B','#E8C878','#5C1520']
 
     // 120 radial hearts exploding from impact centre — reach every corner
     const radialHearts = Array.from({ length: 120 }).map((_, i) => ({
@@ -228,7 +228,7 @@ export default function SplashScreen({ onComplete }: Props) {
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       style={{ background:'linear-gradient(160deg,#FBF8F3 0%,#F5EDE5 50%,#F0E6DC 100%)' }}
       animate={bursting ? { opacity: 0 } : { opacity: 1 }}
-      transition={{ duration: 2.6, ease: 'easeInOut', delay: bursting ? 2.0 : 0 }}
+      transition={{ duration: 1.6, ease: 'easeInOut', delay: bursting ? 1.2 : 0 }}
     >
       {/* Breathing glow */}
       <motion.div className="absolute pointer-events-none"
@@ -386,7 +386,7 @@ export default function SplashScreen({ onComplete }: Props) {
 
             {Array.from({ length:16 }).map((_,i) => {
               const a = (i/16)*Math.PI*2, d = 40+((i*53)%5)*30, sz = 8+((i*31)%4)*7
-              const col = ['#722F37','#C9A84C','#E8A0A8','#FFD700'][i%4]
+              const col = ['#722F37','#C9A84C','#9E1A2B','#B8923A'][i%4]
               return (
                 <motion.div key={`mh${i}`} className="fixed" style={{ top:aPos.y, left:aPos.x }}>
                   <motion.div
