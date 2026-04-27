@@ -26,6 +26,7 @@ body {
   overflow-x: hidden;
   font-family: var(--font-inter);
   color: var(--burgundy-dark);
+  scroll-behavior: smooth;
 }
 
 /* Animated ambient background */
