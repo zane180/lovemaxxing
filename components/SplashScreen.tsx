@@ -14,10 +14,10 @@ const NIB_X     = 35
 const T = {
   startWrite:  600,
   morphStart:  4900,
-  arrowLaunch: 6400,   // ~1.5 s of heartbeat visible before arrow
-  arrowHit:    8500,   // 2.1 s elegant flight
+  arrowLaunch: 6400,
+  arrowHit:    8500,
   burstStart:  8950,
-  done:        11400,  // 2.45s after burst — enough for fade (0.35 + 1.8s) to fully complete
+  done:        13800,  // 4.85s of burst — hearts fill screen, linger, then fade
 }
 
 /* ── SVG components ──────────────────────────────────────────── */
@@ -189,33 +189,33 @@ export default function SplashScreen({ onComplete }: Props) {
     const maxD = Math.sqrt(cx * cx + cy * cy) * 1.25
     const colors = ['#722F37','#C9A84C','#E8A0A8','#FFD700','#FF6B8A','#9E1A2B','#D4A0B0','#FFC0CB']
 
-    // 80 radial hearts exploding from impact centre
-    const radialHearts = Array.from({ length: 80 }).map((_, i) => ({
-      angle:    (i / 80) * Math.PI * 2 + ((i * 17) % 7) * 0.06,
-      distance: maxD * (0.12 + ((i * 73 + 41) % 11) * 0.08),  // 0.12 → ~1.0 × maxD
-      size:     8 + ((i * 31 + 13) % 8) * 7,
-      delay:    (i * 0.012) % 0.2,
-      duration: 0.85 + ((i * 23 + 5) % 5) * 0.18,
-      spin:     ((i * 47 + 11) % 3 - 1) * 240,
+    // 120 radial hearts exploding from impact centre — reach every corner
+    const radialHearts = Array.from({ length: 120 }).map((_, i) => ({
+      angle:    (i / 120) * Math.PI * 2 + ((i * 17) % 7) * 0.05,
+      distance: maxD * (0.3 + ((i * 73 + 41) % 11) * 0.072),  // 0.3 → 1.09 × maxD
+      size:     12 + ((i * 31 + 13) % 9) * 10,                 // 12 – 92 px
+      delay:    (i * 0.007) % 0.14,                             // tighter stagger
+      duration: 0.55 + ((i * 23 + 5) % 5) * 0.13,              // 0.55 – 1.07 s (snappy)
+      spin:     ((i * 47 + 11) % 3 - 1) * 260,
       color:    colors[i % 8],
     }))
 
-    // 150 flood hearts in a 15×10 grid covering every pixel of the screen
-    const COLS = 15, ROWS = 10
+    // 260 flood hearts in a 20×13 grid — no gaps anywhere on screen
+    const COLS = 20, ROWS = 13
     const cW = W / COLS, cH = H / ROWS
-    const floodHearts = Array.from({ length: 150 }).map((_, i) => {
+    const floodHearts = Array.from({ length: 260 }).map((_, i) => {
       const col = i % COLS
       const row = Math.floor(i / COLS)
-      const jx  = ((i * 137 + 41) % 21 - 10) / 10 * cW * 0.42
-      const jy  = ((i * 173 + 37) % 17 - 8)  /  8 * cH * 0.42
-      const size = 14 + ((i * 29 + 7) % 7) * 9   // 14 – 68 px
+      const jx  = ((i * 137 + 41) % 21 - 10) / 10 * cW * 0.48
+      const jy  = ((i * 173 + 37) % 17 - 8)  /  8 * cH * 0.48
+      const size = 20 + ((i * 29 + 7) % 8) * 12  // 20 – 104 px
       return {
         left:     col * cW + cW / 2 + jx - size / 2,
         top:      row * cH + cH / 2 + jy - size / 2,
         size,
-        delay:    0.04 + ((i * 19 + 3) % 23) * 0.028,  // 0.04 – 0.68 s
-        duration: 0.55 + ((i * 37 + 11) % 5) * 0.17,   // 0.55 – 1.23 s
-        spin:     ((i * 53 + 7) % 3 - 1) * 170,
+        delay:    ((i * 19 + 3) % 30) * 0.02,   // 0 – 0.58 s
+        duration: 0.38 + ((i * 37 + 11) % 5) * 0.1,  // 0.38 – 0.78 s (fast pop)
+        spin:     ((i * 53 + 7) % 3 - 1) * 180,
         color:    colors[i % 8],
       }
     })
@@ -228,7 +228,7 @@ export default function SplashScreen({ onComplete }: Props) {
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       style={{ background:'linear-gradient(160deg,#FBF8F3 0%,#F5EDE5 50%,#F0E6DC 100%)' }}
       animate={bursting ? { opacity: 0 } : { opacity: 1 }}
-      transition={{ duration: 1.8, ease: 'easeInOut', delay: bursting ? 0.35 : 0 }}
+      transition={{ duration: 2.6, ease: 'easeInOut', delay: bursting ? 2.0 : 0 }}
     >
       {/* Breathing glow */}
       <motion.div className="absolute pointer-events-none"
@@ -415,14 +415,14 @@ export default function SplashScreen({ onComplete }: Props) {
                   animate={{
                     x: Math.cos(angle) * distance,
                     y: Math.sin(angle) * distance,
-                    opacity: [0, 1, 1, 0],
-                    scale:   [0, 1.5, 1.1, 0],
+                    opacity: [0, 1, 1],
+                    scale:   [0, 1.6, 1],
                     rotate:  spin,
                   }}
                   transition={{
                     duration, delay, ease:'easeOut',
-                    opacity: { times:[0, 0.1, 0.6, 1] },
-                    scale:   { times:[0, 0.16, 0.55, 1] },
+                    opacity: { times:[0, 0.15, 1] },
+                    scale:   { times:[0, 0.2, 1] },
                   }}
                 >
                   <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
@@ -438,11 +438,11 @@ export default function SplashScreen({ onComplete }: Props) {
                 style={{ left, top, zIndex:211 }}>
                 <motion.div
                   initial={{ opacity:0, scale:0, rotate:0 }}
-                  animate={{ opacity:[0, 1, 1, 0], scale:[0, 1.3, 1, 0], rotate:spin }}
+                  animate={{ opacity:[0, 1, 1], scale:[0, 1.4, 1], rotate:spin }}
                   transition={{
                     delay, duration, ease:'easeOut',
-                    opacity: { times:[0, 0.15, 0.65, 1] },
-                    scale:   { times:[0, 0.2, 0.6, 1] },
+                    opacity: { times:[0, 0.2, 1] },
+                    scale:   { times:[0, 0.25, 1] },
                   }}
                 >
                   <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
