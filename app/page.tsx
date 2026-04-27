@@ -123,7 +123,7 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-cream-100 dark:bg-[#080306] transition-colors duration-300 overflow-x-hidden">
+      <div className="min-h-screen bg-cream-100 dark:bg-transparent transition-colors duration-300 overflow-x-hidden">
 
         {/* ── NAV ─────────────────────────────────────────────────── */}
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -170,8 +170,8 @@ export default function LandingPage() {
                 width: 680, height: 480,
                 top: '8%', left: '-12%',
                 background: dark
-                  ? 'radial-gradient(ellipse, rgba(114,47,55,0.38) 0%, transparent 70%)'
-                  : 'radial-gradient(ellipse, rgba(114,47,55,0.10) 0%, transparent 70%)',
+                  ? 'radial-gradient(ellipse, rgba(114,47,55,0.50) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(114,47,55,0.22) 0%, transparent 70%)',
               }}
               animate={{
                 x: [0, 55, -30, 55, 0],
@@ -187,8 +187,8 @@ export default function LandingPage() {
                 width: 560, height: 400,
                 top: '30%', right: '-10%',
                 background: dark
-                  ? 'radial-gradient(ellipse, rgba(201,168,76,0.22) 0%, transparent 70%)'
-                  : 'radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%)',
+                  ? 'radial-gradient(ellipse, rgba(201,168,76,0.28) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(201,168,76,0.16) 0%, transparent 70%)',
               }}
               animate={{
                 x: [0, -60, 35, -45, 0],
@@ -204,8 +204,8 @@ export default function LandingPage() {
                 width: 420, height: 340,
                 bottom: '15%', left: '35%',
                 background: dark
-                  ? 'radial-gradient(ellipse, rgba(158,26,43,0.28) 0%, transparent 70%)'
-                  : 'radial-gradient(ellipse, rgba(158,26,43,0.06) 0%, transparent 70%)',
+                  ? 'radial-gradient(ellipse, rgba(158,26,43,0.36) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse, rgba(158,26,43,0.15) 0%, transparent 70%)',
               }}
               animate={{
                 x: [0, 40, -50, 25, 0],
@@ -221,8 +221,8 @@ export default function LandingPage() {
             className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[560px] rounded-full blur-[130px] pointer-events-none"
             style={{
               background: dark
-                ? 'radial-gradient(ellipse, rgba(114,47,55,0.28) 0%, transparent 70%)'
-                : 'radial-gradient(ellipse, rgba(114,47,55,0.07) 0%, transparent 70%)',
+                ? 'radial-gradient(ellipse, rgba(114,47,55,0.42) 0%, transparent 70%)'
+                : 'radial-gradient(ellipse, rgba(114,47,55,0.14) 0%, transparent 70%)',
               x: orbX, y: orbY,
             }}
           />
