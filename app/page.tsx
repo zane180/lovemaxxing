@@ -466,19 +466,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── HOW IT WORKS  (deliberately dark for contrast rhythm) ─ */}
-        <section className="py-32 px-6 bg-gradient-to-br from-[#4A1520] via-[#722F37] to-[#3d1020] relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20"
-            style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(201,169,110,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(201,169,110,0.15) 0%, transparent 50%)' }}
+        {/* ── HOW IT WORKS ────────────────────────────────────────── */}
+        <section className="py-32 px-6 border-y border-cream-300 dark:border-white/[0.05] bg-white/40 dark:bg-white/[0.015] relative overflow-hidden">
+          {/* Subtle ambient glow — matches the rest of the page */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(114,47,55,0.05) 0%, transparent 55%), radial-gradient(circle at 80% 50%, rgba(201,169,110,0.04) 0%, transparent 55%)' }}
           />
           <div className="max-w-5xl mx-auto relative">
             <motion.div
               className="text-center mb-20"
               initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
             >
-              <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.25em] text-gold-400/70 mb-3">The Process</motion.p>
-              <motion.h2 variants={fadeUp} className="font-serif text-4xl md:text-6xl font-bold text-cream-100 mb-4">How It Works</motion.h2>
-              <motion.p variants={fadeUp} className="text-cream-300/60 text-lg">Three steps to finding someone who actually fits.</motion.p>
+              <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.25em] text-burgundy-700 dark:text-burgundy-400 mb-3">The Process</motion.p>
+              <motion.h2 variants={fadeUp} className="font-serif text-4xl md:text-6xl font-bold text-burgundy-950 dark:text-cream-100 mb-4">How It Works</motion.h2>
+              <motion.p variants={fadeUp} className="text-burgundy-800/55 dark:text-cream-300/45 text-lg">Three steps to finding someone who actually fits.</motion.p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 relative">
@@ -497,13 +498,13 @@ export default function LandingPage() {
                   viewport={{ once: true }} transition={{ delay: i * 0.2 }}
                 >
                   <motion.div
-                    className="w-16 h-16 rounded-full border border-gold-500/40 bg-gold-500/10 flex items-center justify-center mx-auto mb-6 relative z-10"
+                    className="w-16 h-16 rounded-full border border-gold-500/50 dark:border-gold-500/40 bg-gold-500/8 dark:bg-gold-500/10 flex items-center justify-center mx-auto mb-6 relative z-10"
                     whileHover={{ scale: 1.1, borderColor: 'rgba(201,169,110,0.8)' }}
                   >
-                    <span className="font-serif text-xl font-bold text-gold-400">{i + 1}</span>
+                    <span className="font-serif text-xl font-bold text-gold-600 dark:text-gold-400">{i + 1}</span>
                   </motion.div>
-                  <h3 className="font-serif text-xl font-semibold text-cream-100 mb-3">{item.title}</h3>
-                  <p className="text-cream-300/55 leading-relaxed text-sm">{item.desc}</p>
+                  <h3 className="font-serif text-xl font-semibold text-burgundy-950 dark:text-cream-100 mb-3">{item.title}</h3>
+                  <p className="text-burgundy-800/55 dark:text-cream-300/45 leading-relaxed text-sm">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -512,7 +513,7 @@ export default function LandingPage() {
               className="text-center mt-12"
               initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.7 }}
             >
-              <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-base px-10 py-4">
+              <Link href="/signup" className="btn-primary inline-flex items-center gap-2 text-base px-10 py-4">
                 Start for Free <ChevronRight className="w-5 h-5" />
               </Link>
             </motion.div>
