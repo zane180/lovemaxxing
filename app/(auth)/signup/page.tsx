@@ -39,9 +39,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#080306] transition-colors duration-300 flex items-center justify-center px-6 py-12">
       <div className="absolute top-6 left-6">
-        <Link href="/" className="flex items-center gap-2 text-burgundy-900/60 hover:text-burgundy-900 transition-colors">
+        <Link href="/" className="flex items-center gap-2 text-burgundy-900/60 dark:text-cream-300/50 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </Link>
@@ -55,16 +55,16 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="w-8 h-8 text-burgundy-900 fill-burgundy-900" />
+            <Heart className="w-8 h-8 text-burgundy-900 dark:text-burgundy-400 fill-burgundy-900 dark:fill-burgundy-400" />
           </div>
-          <h1 className="font-serif text-3xl font-bold text-burgundy-950 mb-2">Join Lovemaxxing</h1>
-          <p className="text-burgundy-800/60">Find someone who actually gets you</p>
+          <h1 className="font-serif text-3xl font-bold text-burgundy-950 dark:text-cream-100 mb-2">Join Lovemaxxing</h1>
+          <p className="text-burgundy-800/60 dark:text-cream-300/50">Find someone who actually gets you</p>
         </div>
 
         <div className="card-luxury">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Full Name</label>
               <input
                 type="text"
                 required
@@ -76,7 +76,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Email</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Email</label>
               <input
                 type="email"
                 required
@@ -88,7 +88,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Password</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -102,7 +102,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 hover:text-burgundy-900 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 dark:text-cream-300/30 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -110,7 +110,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Date of Birth</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Date of Birth</label>
               <input
                 type="date"
                 required
@@ -123,7 +123,7 @@ export default function SignupPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-burgundy-950 mb-2">I am</label>
+                <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">I am</label>
                 <select
                   required
                   className="input-field"
@@ -138,7 +138,7 @@ export default function SignupPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-burgundy-950 mb-2">Interested in</label>
+                <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Interested in</label>
                 <select
                   required
                   className="input-field"
@@ -153,7 +153,7 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <p className="text-xs text-burgundy-800/50">
+            <p className="text-xs text-burgundy-800/50 dark:text-cream-300/40">
               By joining, you agree to our{' '}
               <Link href="/terms" className="underline">Terms of Service</Link> and{' '}
               <Link href="/privacy" className="underline">Privacy Policy</Link>.
@@ -173,9 +173,9 @@ export default function SignupPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-burgundy-800/60">
+            <p className="text-sm text-burgundy-800/60 dark:text-cream-300/50">
               Already have an account?{' '}
-              <Link href="/login" className="text-burgundy-900 font-semibold hover:underline">
+              <Link href="/login" className="text-burgundy-900 dark:text-gold-400 font-semibold hover:underline">
                 Sign In
               </Link>
             </p>

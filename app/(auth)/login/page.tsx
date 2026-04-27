@@ -39,9 +39,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-cream-100 dark:bg-[#080306] transition-colors duration-300 flex items-center justify-center px-6">
       <div className="absolute top-6 left-6">
-        <Link href="/" className="flex items-center gap-2 text-burgundy-900/60 hover:text-burgundy-900 transition-colors">
+        <Link href="/" className="flex items-center gap-2 text-burgundy-900/60 dark:text-cream-300/50 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </Link>
@@ -55,16 +55,16 @@ export default function LoginPage() {
       >
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="w-8 h-8 text-burgundy-900 fill-burgundy-900" />
+            <Heart className="w-8 h-8 text-burgundy-900 dark:text-burgundy-400 fill-burgundy-900 dark:fill-burgundy-400" />
           </div>
-          <h1 className="font-serif text-3xl font-bold text-burgundy-950 mb-2">Welcome back</h1>
-          <p className="text-burgundy-800/60">Sign in to your Lovemaxxing account</p>
+          <h1 className="font-serif text-3xl font-bold text-burgundy-950 dark:text-cream-100 mb-2">Welcome back</h1>
+          <p className="text-burgundy-800/60 dark:text-cream-300/50">Sign in to your Lovemaxxing account</p>
         </div>
 
         <div className="card-luxury">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Email</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Email</label>
               <input
                 type="email"
                 required
@@ -76,7 +76,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-burgundy-950 mb-2">Password</label>
+              <label className="block text-sm font-medium text-burgundy-950 dark:text-cream-100 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 hover:text-burgundy-900 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-burgundy-800/40 dark:text-cream-300/30 hover:text-burgundy-900 dark:hover:text-cream-100 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -103,7 +103,7 @@ export default function LoginPage() {
             )}
 
             <div className="flex justify-end">
-              <Link href="/forgot-password" className="text-sm text-burgundy-900 hover:underline">Forgot password?</Link>
+              <Link href="/forgot-password" className="text-sm text-burgundy-900 dark:text-gold-400 hover:underline">Forgot password?</Link>
             </div>
 
             <button
@@ -120,9 +120,9 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-burgundy-800/60">
+            <p className="text-sm text-burgundy-800/60 dark:text-cream-300/50">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-burgundy-900 font-semibold hover:underline">
+              <Link href="/signup" className="text-burgundy-900 dark:text-gold-400 font-semibold hover:underline">
                 Join Lovemaxxing
               </Link>
             </p>
