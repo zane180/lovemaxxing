@@ -285,6 +285,7 @@ export default function LandingPage() {
                 background: 'linear-gradient(135deg, #C9A96E 0%, #B8923A 50%, #C9A96E 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                padding: '0.18em 0.05em',
               }}
             >
               Start Connecting.
