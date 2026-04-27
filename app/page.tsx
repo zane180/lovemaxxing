@@ -226,7 +226,7 @@ export default function LandingPage() {
 
           {/* Match Score Badge — between cards */}
           <motion.div
-            className="absolute top-[38%] left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-0 pointer-events-none"
+            className="absolute bottom-[18%] left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-0 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
