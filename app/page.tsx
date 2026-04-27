@@ -331,11 +331,9 @@ export default function LandingPage() {
           {/* Scroll cue */}
           <motion.div
             className="absolute bottom-8 left-1/2 -translate-x-1/2"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.6, repeat: Infinity }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: [0, 8, 0] } as any}
-            transition={{ opacity: { delay: 2 }, y: { duration: 1.6, repeat: Infinity } } as any}
+            animate={{ opacity: 1, y: [0, 8, 0] }}
+            transition={{ opacity: { delay: 2, duration: 0.6 }, y: { duration: 1.6, repeat: Infinity, ease: 'easeInOut' } }}
           >
             <ArrowDown className="w-5 h-5 text-burgundy-800/25 dark:text-cream-300/20" />
           </motion.div>
