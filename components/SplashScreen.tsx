@@ -407,49 +407,49 @@ export default function SplashScreen({ onComplete }: Props) {
         {bursting && (
           <motion.div key="burst" className="fixed inset-0 pointer-events-none" style={{ zIndex:210 }}>
 
-            {/* Radial: 80 hearts from impact centre */}
+            {/* Radial: 120 hearts — CSS-animated on compositor thread */}
             {radialHearts.map(({ angle, distance, size, delay, duration, spin, color }, i) => (
-              <motion.div key={`r${i}`} className="fixed" style={{ top:screenCy, left:screenCx }}>
-                <motion.div
-                  initial={{ x:0, y:0, opacity:0, scale:0, rotate:0 }}
-                  animate={{
-                    x: Math.cos(angle) * distance,
-                    y: Math.sin(angle) * distance,
-                    opacity: [0, 1, 1],
-                    scale:   [0, 1.6, 1],
-                    rotate:  spin,
-                  }}
-                  transition={{
-                    duration, delay, ease:'easeOut',
-                    opacity: { times:[0, 0.15, 1] },
-                    scale:   { times:[0, 0.2, 1] },
-                  }}
-                >
-                  <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
-                    <HeartPath/>
-                  </svg>
-                </motion.div>
-              </motion.div>
+              <div
+                key={`r${i}`}
+                style={Object.assign({
+                  position: 'fixed' as const,
+                  top: screenCy,
+                  left: screenCx,
+                  width: size,
+                  height: size,
+                  animation: `heart-radial ${duration}s ease-out ${delay}s both`,
+                  willChange: 'transform, opacity',
+                }, {
+                  '--tx': `${Math.cos(angle) * distance}px`,
+                  '--ty': `${Math.sin(angle) * distance}px`,
+                  '--spin': `${spin}deg`,
+                })}
+              >
+                <svg viewBox="0 0 40 37" fill={color} style={{ width: size, height: size, display: 'block' }}>
+                  <HeartPath />
+                </svg>
+              </div>
             ))}
 
-            {/* Flood: 150 hearts in a 15×10 grid — every corner covered */}
+            {/* Flood: 260 hearts in a 20×13 grid — CSS-animated on compositor thread */}
             {floodHearts.map(({ left, top, size, delay, duration, spin, color }, i) => (
-              <motion.div key={`f${i}`} className="fixed pointer-events-none"
-                style={{ left, top, zIndex:211 }}>
-                <motion.div
-                  initial={{ opacity:0, scale:0, rotate:0 }}
-                  animate={{ opacity:[0, 1, 1], scale:[0, 1.4, 1], rotate:spin }}
-                  transition={{
-                    delay, duration, ease:'easeOut',
-                    opacity: { times:[0, 0.2, 1] },
-                    scale:   { times:[0, 0.25, 1] },
-                  }}
-                >
-                  <svg viewBox="0 0 40 37" fill={color} style={{ width:size, height:size, display:'block' }}>
-                    <HeartPath/>
-                  </svg>
-                </motion.div>
-              </motion.div>
+              <div
+                key={`f${i}`}
+                style={Object.assign({
+                  position: 'fixed' as const,
+                  left,
+                  top,
+                  zIndex: 211,
+                  animation: `heart-flood ${duration}s ease-out ${delay}s both`,
+                  willChange: 'transform, opacity',
+                }, {
+                  '--spin': `${spin}deg`,
+                })}
+              >
+                <svg viewBox="0 0 40 37" fill={color} style={{ width: size, height: size, display: 'block' }}>
+                  <HeartPath />
+                </svg>
+              </div>
             ))}
 
           </motion.div>
