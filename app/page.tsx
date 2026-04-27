@@ -137,7 +137,7 @@ export default function LandingPage() {
               <span className="font-serif text-xl font-bold text-burgundy-950 dark:text-cream-100">Lovemaxxing</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features"     className="text-sm text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-950 dark:hover:text-cream-100 transition-colors">How It Works</a>
+              <a href="#how-it-works" className="text-sm text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-950 dark:hover:text-cream-100 transition-colors">How It Works</a>
               <a href="#testimonials" className="text-sm text-burgundy-800/60 dark:text-cream-300/50 hover:text-burgundy-950 dark:hover:text-cream-100 transition-colors">Stories</a>
             </div>
             <div className="flex items-center gap-3">
@@ -467,7 +467,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── HOW IT WORKS ────────────────────────────────────────── */}
-        <section className="py-32 px-6 border-y border-cream-300 dark:border-white/[0.05] bg-white/40 dark:bg-white/[0.015] relative overflow-hidden">
+        <section id="how-it-works" className="py-32 px-6 border-y border-cream-300 dark:border-white/[0.05] bg-white/40 dark:bg-white/[0.015] relative overflow-hidden">
           {/* Subtle ambient glow — matches the rest of the page */}
           <div className="absolute inset-0 pointer-events-none"
             style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(114,47,55,0.05) 0%, transparent 55%), radial-gradient(circle at 80% 50%, rgba(201,169,110,0.04) 0%, transparent 55%)' }}
