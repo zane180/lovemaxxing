@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 // ── Card data ────────────────────────────────────────────────────────────────
 const CARDS = [
@@ -28,13 +29,16 @@ interface PhysCard {
 }
 
 export function PhysicsCards({ dark }: { dark: boolean }) {
+  const mobile     = useIsMobile()
   const sectionRef = useRef<HTMLDivElement>(null)
   const cardRefs   = useRef<(HTMLDivElement | null)[]>([])
   const stateRef   = useRef<PhysCard[]>([])
   const mouseRef   = useRef<{ x: number; y: number } | null>(null)
   const rafRef     = useRef<number>(0)
+  const visibleRef = useRef(false)
 
   useEffect(() => {
+    if (mobile) return // static layout on mobile — no rAF needed
     const section = sectionRef.current
     if (!section) return
 
@@ -53,6 +57,7 @@ export function PhysicsCards({ dark }: { dark: boolean }) {
     }
 
     function loop() {
+      if (!visibleRef.current) { rafRef.current = 0; return }
       const section = sectionRef.current
       if (!section) return
       const rect   = section.getBoundingClientRect()
@@ -121,19 +126,84 @@ export function PhysicsCards({ dark }: { dark: boolean }) {
     const onMouse = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY } }
     const onLeave = ()              => { mouseRef.current = null }
 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visibleRef.current = entry.isIntersecting
+        if (entry.isIntersecting && !rafRef.current) {
+          rafRef.current = requestAnimationFrame(loop)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
     initCards()
     window.addEventListener('mousemove', onMouse, { passive: true })
     section.addEventListener('mouseleave', onLeave)
-    rafRef.current = requestAnimationFrame(loop)
     window.addEventListener('resize', initCards)
+    observer.observe(section)
 
     return () => {
+      observer.disconnect()
       window.removeEventListener('mousemove', onMouse)
       section.removeEventListener('mouseleave', onLeave)
       window.removeEventListener('resize', initCards)
       cancelAnimationFrame(rafRef.current)
     }
-  }, [])
+  }, [mobile])
+
+  // ── Mobile: simple grid, no physics ──────────────────────────────────────────
+  if (mobile) {
+    return (
+      <section className="py-24 px-6 overflow-hidden">
+        <div className="text-center mb-8">
+          <p className="text-xs uppercase tracking-[0.3em] text-burgundy-700 dark:text-burgundy-400 mb-3">Live Demo</p>
+          <h2 className="font-serif text-4xl font-bold text-burgundy-950 dark:text-cream-100 mb-3">
+            This is what compatibility looks like.
+          </h2>
+          <p className="text-burgundy-800/50 dark:text-cream-300/45 text-base max-w-sm mx-auto">
+            Compatible people find each other — the AI does the work.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+          {CARDS.map(card => (
+            <div
+              key={card.id}
+              className="rounded-2xl p-3"
+              style={{
+                background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.85)',
+                border: dark ? '1px solid rgba(255,255,255,0.09)' : '1px solid rgba(255,255,255,0.9)',
+                boxShadow: dark ? '0 4px 16px rgba(0,0,0,0.35)' : '0 4px 16px rgba(114,47,55,0.10)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <div>
+                  <div className="font-serif font-semibold text-xs text-burgundy-950 dark:text-cream-100 leading-tight">
+                    {card.name}, {card.age}
+                  </div>
+                  <div className="flex gap-1 mt-1">
+                    {card.tags.slice(0, 2).map(t => (
+                      <span key={t} className="text-[7px] px-1 py-0.5 rounded-full"
+                        style={{ background: dark ? 'rgba(114,47,55,0.3)' : 'rgba(114,47,55,0.08)', color: dark ? '#FAF7F2' : '#4A1520' }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Heart className="w-3.5 h-3.5 shrink-0" style={{ color: card.color, fill: card.color + '40' }} />
+              </div>
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[7px] text-burgundy-800/40 dark:text-cream-300/30 uppercase tracking-wider">match</span>
+                <span className="text-[8px] font-bold" style={{ color: card.color }}>{card.score}%</span>
+              </div>
+              <div className="h-0.5 bg-burgundy-900/10 dark:bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${card.score}%`, background: `linear-gradient(90deg, ${card.color}, #C9A96E)` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-24 px-6 overflow-hidden">

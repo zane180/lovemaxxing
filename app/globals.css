@@ -80,6 +80,14 @@ html.dark body {
   50%       { background-position: 100% 50%; }
 }
 
+/* On touch devices: disable background-position animation (triggers repaint every frame)
+   and replace with a static background. This is the cheapest possible fix. */
+@media (pointer: coarse) {
+  body        { animation: none; background: #FAF7F2; }
+  body::before { animation: none; }
+  html.dark body { background: #120608; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--cream-200); }

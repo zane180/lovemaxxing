@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ChevronRight, Sparkles } from 'lucide-react'
 import { useTimeOfDay } from '@/lib/useTimeOfDay'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 type CSSWithVars = React.CSSProperties & { [k: `--${string}`]: string | number }
 
@@ -52,7 +53,7 @@ const MATCH_CARDS = [
 ]
 
 // ── Drag-to-compare card ───────────────────────────────────────────────────────
-function ComparisonCard({ dark }: { dark: boolean }) {
+function ComparisonCard({ dark, mobile }: { dark: boolean; mobile: boolean }) {
   const containerRef  = useRef<HTMLDivElement>(null)
   const lineRef       = useRef<HTMLDivElement>(null)
   const rightRef      = useRef<HTMLDivElement>(null)
@@ -180,10 +181,10 @@ function ComparisonCard({ dark }: { dark: boolean }) {
             : 'radial-gradient(ellipse at 35% 30%, rgba(114,47,55,0.10) 0%, rgba(250,247,242,0.97) 65%)',
         }}
       >
-        {/* aurora blobs — no backdrop-filter, just radial gradients */}
-        <div className="absolute -top-10 right-0 w-56 h-44 rounded-full blur-[80px]"
+        {/* aurora blobs — blur kept small on mobile */}
+        <div className={`absolute -top-10 right-0 w-56 h-44 rounded-full ${mobile ? 'blur-[20px]' : 'blur-[80px]'}`}
           style={{ background: dark ? 'rgba(114,47,55,0.55)' : 'rgba(114,47,55,0.18)' }} />
-        <div className="absolute bottom-8 right-4 w-44 h-36 rounded-full blur-[60px]"
+        <div className={`absolute bottom-8 right-4 w-44 h-36 rounded-full ${mobile ? 'blur-[16px]' : 'blur-[60px]'}`}
           style={{ background: dark ? 'rgba(201,168,76,0.32)' : 'rgba(201,168,76,0.16)' }} />
 
         {MATCH_CARDS.map(c => (
@@ -296,37 +297,29 @@ function ComparisonCard({ dark }: { dark: boolean }) {
 // ── Main hero section ──────────────────────────────────────────────────────────
 export function SplitWorldHero({ dark }: { dark: boolean }) {
   const { heroTag, subtext } = useTimeOfDay()
+  const mobile = useIsMobile()
+
+  // On mobile: static aurora blobs, blur 30px instead of 140px (large blurs destroy GPU on iPhone)
+  const blobClass = (desktopBlur: string) => `absolute rounded-full ${mobile ? 'blur-[30px]' : desktopBlur}`
 
   return (
     <section className="relative min-h-screen overflow-hidden flex items-center">
       {/* Aurora background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
-          className="absolute rounded-full blur-[140px]"
-          style={{
-            width: 680, height: 520, top: '-8%', left: '-6%',
-            background: dark ? 'rgba(114,47,55,0.42)' : 'rgba(114,47,55,0.14)',
-          }}
-          animate={{ x: [0, 55, -30, 50, 0], y: [0, -40, 60, -20, 0], scale: [1, 1.07, 0.94, 1.05, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
+          className={blobClass('blur-[140px]')}
+          style={{ width: 680, height: 520, top: '-8%', left: '-6%', background: dark ? 'rgba(114,47,55,0.42)' : 'rgba(114,47,55,0.14)' }}
+          {...(!mobile && { animate: { x: [0, 55, -30, 50, 0], y: [0, -40, 60, -20, 0], scale: [1, 1.07, 0.94, 1.05, 1] }, transition: blobTransitions[0] })}
         />
         <motion.div
-          className="absolute rounded-full blur-[110px]"
-          style={{
-            width: 440, height: 360, top: '25%', right: '-4%',
-            background: dark ? 'rgba(201,168,76,0.26)' : 'rgba(201,168,76,0.11)',
-          }}
-          animate={{ x: [0, -40, 25, -32, 0], y: [0, 45, -25, 38, 0], scale: [1, 0.93, 1.1, 0.97, 1] }}
-          transition={{ duration: 28, repeat: Infinity, ease: 'easeInOut', delay: 6 }}
+          className={blobClass('blur-[110px]')}
+          style={{ width: 440, height: 360, top: '25%', right: '-4%', background: dark ? 'rgba(201,168,76,0.26)' : 'rgba(201,168,76,0.11)' }}
+          {...(!mobile && { animate: { x: [0, -40, 25, -32, 0], y: [0, 45, -25, 38, 0], scale: [1, 0.93, 1.1, 0.97, 1] }, transition: blobTransitions[1] })}
         />
         <motion.div
-          className="absolute rounded-full blur-[100px]"
-          style={{
-            width: 300, height: 260, bottom: '8%', left: '18%',
-            background: dark ? 'rgba(158,26,43,0.24)' : 'rgba(158,26,43,0.09)',
-          }}
-          animate={{ x: [0, 35, -42, 22, 0], y: [0, -50, 30, -38, 0], scale: [1, 1.12, 0.9, 1.06, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 11 }}
+          className={blobClass('blur-[100px]')}
+          style={{ width: 300, height: 260, bottom: '8%', left: '18%', background: dark ? 'rgba(158,26,43,0.24)' : 'rgba(158,26,43,0.09)' }}
+          {...(!mobile && { animate: { x: [0, 35, -42, 22, 0], y: [0, -50, 30, -38, 0], scale: [1, 1.12, 0.9, 1.06, 1] }, transition: blobTransitions[2] })}
         />
       </div>
 
@@ -398,7 +391,7 @@ export function SplitWorldHero({ dark }: { dark: boolean }) {
           >
             See the difference
           </p>
-          <ComparisonCard dark={dark} />
+          <ComparisonCard dark={dark} mobile={mobile} />
         </motion.div>
       </div>
 

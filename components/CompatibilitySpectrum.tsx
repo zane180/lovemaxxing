@@ -1,8 +1,7 @@
 'use client'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-
-const N_DOTS = 90
+import { useIsMobile } from '@/lib/useIsMobile'
 const COLORS_CHAOS  = ['rgba(160,160,170,0.55)', 'rgba(140,140,155,0.45)', 'rgba(120,120,135,0.5)']
 const CLUSTERS_LMXY  = [
   { x: 0.18, y: 0.30 }, { x: 0.24, y: 0.65 },
@@ -22,19 +21,26 @@ function easeInOut(t: number) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 }
 
+const N_DOTS_DESKTOP = 90
+const N_DOTS_MOBILE  = 45
+
 export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
+  const mobile    = useIsMobile()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
   const [handle, setHandle]   = useState(0)
   const dotsRef  = useRef<Dot[]>([])
   const rafRef   = useRef<number>(0)
-  const handleRef = useRef(0)
+  const handleRef  = useRef(0)
+  const visibleRef = useRef(false)
 
-  // Init dots once
+  // Init dots — fewer on mobile
   useEffect(() => {
+    const N_DOTS = mobile ? N_DOTS_MOBILE : N_DOTS_DESKTOP
     const pairs   = CLUSTERS_LMXY.length / 2
     const clusterPairs = Array.from({ length: pairs }, (_, i) => [i * 2, i * 2 + 1])
 
-    dotsRef.current = Array.from({ length: N_DOTS }, (_, i) => {
+    dotsRef.current = Array.from({ length: mobile ? N_DOTS_MOBILE : N_DOTS_DESKTOP }, (_, i) => {
       const pairIdx   = i % pairs
       const side      = i < N_DOTS / 2 ? 0 : 1
       const clIdx     = clusterPairs[pairIdx][side]
@@ -54,7 +60,7 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
         hue: pairColors[pairIdx % pairColors.length],
       }
     })
-  }, [dark])
+  }, [dark, mobile])
 
   // Keep handleRef in sync
   useEffect(() => { handleRef.current = handle }, [handle])
@@ -79,6 +85,7 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
     }
 
     function frame() {
+      if (!visibleRef.current) { rafRef.current = 0; return }
       ctx.clearRect(0, 0, W, H)
       const t = easeInOut(handleRef.current / 100)
       const dots = dotsRef.current
@@ -88,8 +95,9 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
         const alpha = easeInOut((t - 0.5) * 2)
         const pairs = CLUSTERS_LMXY.length / 2
         for (let p = 0; p < pairs; p++) {
-          const leftDots  = dots.filter((_, i) => i < N_DOTS / 2 && i % pairs === p)
-          const rightDots = dots.filter((_, i) => i >= N_DOTS / 2 && i % pairs === p)
+          const half = dots.length / 2
+          const leftDots  = dots.filter((_, i) => i < half && i % pairs === p)
+          const rightDots = dots.filter((_, i) => i >= half && i % pairs === p)
           leftDots.forEach((ld, i) => {
             const rd = rightDots[i]
             if (!rd) return
@@ -135,7 +143,7 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
       // Highlight "you" pair at 100%
       if (t > 0.92) {
         const yalpha = easeInOut((t - 0.92) / 0.08)
-        const ld = dots[0], rd = dots[Math.floor(N_DOTS / 2)]
+        const ld = dots[0], rd = dots[Math.floor(dots.length / 2)]
         if (ld && rd) {
           const lx = (ld.cx + (ld.ox - ld.cx) * t) * W
           const ly = (ld.cy + (ld.oy - ld.cy) * t) * H
@@ -165,22 +173,35 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
       rafRef.current = requestAnimationFrame(frame)
     }
 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visibleRef.current = entry.isIntersecting
+        if (entry.isIntersecting && !rafRef.current) {
+          rafRef.current = requestAnimationFrame(frame)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
     resize()
     window.addEventListener('resize', resize)
+    if (sectionRef.current) observer.observe(sectionRef.current)
+    // Start immediately so first render shows something; observer will pause it when off-screen
     rafRef.current = requestAnimationFrame(frame)
 
     return () => {
+      observer.disconnect()
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(rafRef.current)
     }
-  }, [dark])
+  }, [dark, mobile])
 
   const onSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setHandle(Number(e.target.value))
   }, [])
 
   return (
-    <section className="py-28 px-6">
+    <section ref={sectionRef} className="py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <motion.div
           className="text-center mb-12"
@@ -228,7 +249,7 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
           className="relative rounded-3xl overflow-hidden border border-cream-300 dark:border-white/[0.06]"
           style={{
             background: dark ? 'rgba(18,6,8,0.85)' : 'rgba(255,255,255,0.5)',
-            backdropFilter: 'blur(12px)',
+            ...(mobile ? {} : { backdropFilter: 'blur(12px)' }),
           }}
         >
           <canvas ref={canvasRef} className="w-full" style={{ height: '380px', display: 'block' }} />
