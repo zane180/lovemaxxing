@@ -309,17 +309,17 @@ export function SplitWorldHero({ dark }: { dark: boolean }) {
         <motion.div
           className={blobClass('blur-[140px]')}
           style={{ width: 680, height: 520, top: '-8%', left: '-6%', background: dark ? 'rgba(114,47,55,0.42)' : 'rgba(114,47,55,0.14)' }}
-          {...(!mobile && { animate: { x: [0, 55, -30, 50, 0], y: [0, -40, 60, -20, 0], scale: [1, 1.07, 0.94, 1.05, 1] }, transition: blobTransitions[0] })}
+          {...(!mobile && { animate: { x: [0, 55, -30, 50, 0], y: [0, -40, 60, -20, 0], scale: [1, 1.07, 0.94, 1.05, 1] }, transition: { duration: 22, repeat: Infinity, ease: 'easeInOut' } })}
         />
         <motion.div
           className={blobClass('blur-[110px]')}
           style={{ width: 440, height: 360, top: '25%', right: '-4%', background: dark ? 'rgba(201,168,76,0.26)' : 'rgba(201,168,76,0.11)' }}
-          {...(!mobile && { animate: { x: [0, -40, 25, -32, 0], y: [0, 45, -25, 38, 0], scale: [1, 0.93, 1.1, 0.97, 1] }, transition: blobTransitions[1] })}
+          {...(!mobile && { animate: { x: [0, -40, 25, -32, 0], y: [0, 45, -25, 38, 0], scale: [1, 0.93, 1.1, 0.97, 1] }, transition: { duration: 28, repeat: Infinity, ease: 'easeInOut', delay: 6 } })}
         />
         <motion.div
           className={blobClass('blur-[100px]')}
           style={{ width: 300, height: 260, bottom: '8%', left: '18%', background: dark ? 'rgba(158,26,43,0.24)' : 'rgba(158,26,43,0.09)' }}
-          {...(!mobile && { animate: { x: [0, 35, -42, 22, 0], y: [0, -50, 30, -38, 0], scale: [1, 1.12, 0.9, 1.06, 1] }, transition: blobTransitions[2] })}
+          {...(!mobile && { animate: { x: [0, 35, -42, 22, 0], y: [0, -50, 30, -38, 0], scale: [1, 1.12, 0.9, 1.06, 1] }, transition: { duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 11 } })}
         />
       </div>
 
