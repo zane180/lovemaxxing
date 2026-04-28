@@ -103,8 +103,10 @@ export function ScrollCinema({ dark }: { dark: boolean }) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const rawCtx = canvas.getContext('2d')
+    if (!rawCtx) return
+    const cv  = canvas
+    const ctx = rawCtx
 
     let W = 0, H = 0
     let leftPts:  [number, number][] = []
@@ -119,8 +121,8 @@ export function ScrollCinema({ dark }: { dark: boolean }) {
     function init() {
       W = window.innerWidth
       H = window.innerHeight
-      canvas.width  = W
-      canvas.height = H
+      cv.width  = W
+      cv.height = H
 
       const lx = W * 0.32, rx = W * 0.68
       const cy = H * 0.48

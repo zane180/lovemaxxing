@@ -62,17 +62,20 @@ export function CompatibilitySpectrum({ dark }: { dark: boolean }) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const rawCtx = canvas.getContext('2d')
+    if (!rawCtx) return
+    // Assign to non-nullable consts so nested functions keep the narrowing
+    const cv  = canvas
+    const ctx = rawCtx
 
     let W = 0, H = 0
 
     function resize() {
-      W = canvas!.offsetWidth
-      H = canvas!.offsetHeight
-      canvas!.width  = W * window.devicePixelRatio
-      canvas!.height = H * window.devicePixelRatio
-      ctx!.scale(window.devicePixelRatio, window.devicePixelRatio)
+      W = cv.offsetWidth
+      H = cv.offsetHeight
+      cv.width  = W * window.devicePixelRatio
+      cv.height = H * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     }
 
     function frame() {

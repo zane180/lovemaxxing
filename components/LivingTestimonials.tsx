@@ -38,8 +38,9 @@ function Waveform({ dark }: { dark: boolean }) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const rawCtx = canvas.getContext('2d')
+    if (!rawCtx) return
+    const ctx = rawCtx
     const W = canvas.offsetWidth, H = canvas.offsetHeight
     canvas.width = W * window.devicePixelRatio
     canvas.height = H * window.devicePixelRatio
