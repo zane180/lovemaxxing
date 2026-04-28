@@ -225,7 +225,7 @@ export function SplitWorldHero({ dark }: { dark: boolean }) {
         ))}
 
         {/* Content */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-y-0 left-1/2 right-0 flex items-center justify-center">
           <div className="text-center max-w-xl mx-auto px-8 pt-20">
             <motion.div
               initial={{ opacity: 0, y: 14 }}

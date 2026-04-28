@@ -121,8 +121,12 @@ export function ScrollCinema({ dark }: { dark: boolean }) {
     function init() {
       W = window.innerWidth
       H = window.innerHeight
-      cv.width  = W
-      cv.height = H
+      const dpr = window.devicePixelRatio || 1
+      cv.width  = W * dpr
+      cv.height = H * dpr
+      cv.style.width  = W + 'px'
+      cv.style.height = H + 'px'
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
       const lx = W * 0.32, rx = W * 0.68
       const cy = H * 0.48
@@ -360,7 +364,7 @@ export function ScrollCinema({ dark }: { dark: boolean }) {
   }, [dark])
 
   return (
-    <div ref={wrapRef} className="relative" style={{ height: '500vh' }}>
+    <div ref={wrapRef} className="relative" style={{ height: '280vh' }}>
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Canvas layer */}
         <canvas

@@ -74,7 +74,7 @@ export function MagneticCursor() {
 
   return (
     <>
-      <style>{`@media (pointer: fine) { html * { cursor: none !important; } }`}</style>
+      <style>{`@media (pointer: fine) { html *:not(input):not(textarea):not(select) { cursor: none !important; } }`}</style>
       {/* Inner dot — fast */}
       <div
         ref={dotRef}
